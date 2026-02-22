@@ -81,53 +81,63 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                         {isDay ? (
                             <motion.svg
                                 key="day-mesh"
-                                width="140"
-                                height="100"
-                                viewBox="0 0 100 80"
-                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                width="100%"
+                                height="100%"
+                                viewBox="0 0 300 100"
+                                preserveAspectRatio="xMidYMid meet"
+                                initial={{ opacity: 0, scale: 0.95, y: 8 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 1.1, y: -10 }}
+                                exit={{ opacity: 0, scale: 1.05, y: -8 }}
                                 className="drop-shadow-[0_0_15px_rgba(34,211,238,0.2)]"
                             >
-                                {/* Detailed Mesh (Day) */}
+                                {/* Alpine range silhouette (High Poly Day) */}
+                                {/* Main mountain ridge outline */}
                                 <path
-                                    d="M10 70 L50 10 L90 70 Z"
+                                    d="M0 90 L30 65 L50 40 L70 55 L90 25 L110 50 L130 30 L155 10 L175 38 L195 20 L215 45 L235 30 L255 55 L270 40 L290 65 L300 90 Z"
                                     stroke="rgba(34,211,238,0.8)"
                                     strokeWidth="0.8"
                                     fill="transparent"
                                 />
-                                {Array.from({ length: 6 }).map((_, i) => (
-                                    <line
-                                        key={i}
-                                        x1={10 + i * 16}
-                                        y1={70}
-                                        x2={50}
-                                        y2={10 + i * 12}
-                                        stroke="rgba(34,211,238,0.3)"
-                                        strokeWidth="0.3"
-                                    />
-                                ))}
-                                <line x1="50" y1="10" x2="50" y2="70" stroke="rgba(34,211,238,0.4)" strokeWidth="0.5" />
-                                <line x1="10" y1="70" x2="90" y2="70" stroke="rgba(34,211,238,0.4)" strokeWidth="0.5" />
+                                {/* Baseline */}
+                                <line x1="0" y1="90" x2="300" y2="90" stroke="rgba(34,211,238,0.4)" strokeWidth="0.5" />
+                                {/* Inner mesh: vertical lines from ridge to base */}
+                                {[30, 50, 70, 90, 110, 130, 155, 175, 195, 215, 235, 255, 270, 290].map((x, i) => {
+                                    const ys = [65, 40, 55, 25, 50, 30, 10, 38, 20, 45, 30, 55, 40, 65];
+                                    return <line key={i} x1={x} y1={ys[i]} x2={x} y2={90} stroke="rgba(34,211,238,0.25)" strokeWidth="0.3" />;
+                                })}
+                                {/* Cross-mesh lines (left slope to right slope) */}
+                                <polyline points="0,90 50,40 90,25 155,10 195,20 255,55 300,90" stroke="rgba(34,211,238,0.15)" strokeWidth="0.3" fill="none" />
+                                <polyline points="0,90 30,65 90,25 130,30 195,20 235,30 300,90" stroke="rgba(34,211,238,0.12)" strokeWidth="0.3" fill="none" />
+                                <polyline points="0,90 70,55 110,50 155,10 215,45 270,40 300,90" stroke="rgba(34,211,238,0.12)" strokeWidth="0.3" fill="none" />
+                                {/* Snow caps glow on peaks */}
+                                <circle cx="155" cy="10" r="2" fill="rgba(34,211,238,0.6)" />
+                                <circle cx="195" cy="20" r="1.5" fill="rgba(34,211,238,0.4)" />
+                                <circle cx="90" cy="25" r="1.5" fill="rgba(34,211,238,0.4)" />
                             </motion.svg>
                         ) : (
                             <motion.svg
                                 key="night-mesh"
-                                width="140"
-                                height="100"
-                                viewBox="0 0 100 80"
-                                initial={{ opacity: 0, scale: 1.1, y: 10 }}
+                                width="100%"
+                                height="100%"
+                                viewBox="0 0 300 100"
+                                preserveAspectRatio="xMidYMid meet"
+                                initial={{ opacity: 0, scale: 1.05, y: 8 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                                exit={{ opacity: 0, scale: 0.95, y: -8 }}
                             >
-                                {/* Minimalist Triangle (Night) */}
+                                {/* Low-poly range: connected triangles (Night) */}
                                 <path
-                                    d="M10 70 L50 20 L90 70 Z"
-                                    stroke="rgba(255,255,255,0.3)"
-                                    strokeWidth="1.5"
-                                    fill="rgba(255,255,255,0.05)"
+                                    d="M0 90 L40 50 L80 70 L120 30 L160 15 L200 45 L240 30 L275 60 L300 90 Z"
+                                    stroke="rgba(255,255,255,0.35)"
+                                    strokeWidth="1"
+                                    fill="rgba(255,255,255,0.04)"
                                 />
-                                <line x1="50" y1="20" x2="50" y2="70" stroke="rgba(255,255,255,0.1)" strokeWidth="0.8" />
+                                <line x1="0" y1="90" x2="300" y2="90" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
+                                {/* Minimal inner lines */}
+                                <line x1="40" y1="50" x2="40" y2="90" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                <line x1="120" y1="30" x2="120" y2="90" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                <line x1="160" y1="15" x2="160" y2="90" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                <line x1="240" y1="30" x2="240" y2="90" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
                             </motion.svg>
                         )}
                     </AnimatePresence>
