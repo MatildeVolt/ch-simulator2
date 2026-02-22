@@ -23,28 +23,28 @@ export default function SwanRadar({ onSuccess, onBreach }: SwanRadarProps) {
 
     // Spawn and update blips
     useEffect(() => {
-        // Initial burst
-        setBlips(Array.from({ length: 4 }).map(() => ({
+        // Initial start
+        setBlips([{
             id: Math.random().toString(36).substr(2, 9),
             angle: Math.random() * 360,
-            distance: 40 + Math.random() * 60, // scattered distances
-            speed: 0.2 + Math.random() * 0.4,
-        })));
+            distance: 100,
+            speed: 0.05 + Math.random() * 0.1,
+        }]);
 
         const spawnInterval = setInterval(() => {
             setBlips(prev => {
-                if (prev.length < 15) {
+                if (prev.length < 8) {
                     const newBlip: Blip = {
                         id: Math.random().toString(36).substr(2, 9),
                         angle: Math.random() * 360,
                         distance: 100,
-                        speed: 0.2 + Math.random() * 0.4,
+                        speed: 0.05 + Math.random() * 0.1,
                     };
                     return [...prev, newBlip];
                 }
                 return prev;
             });
-        }, 1000);
+        }, 2500);
 
         const moveInterval = setInterval(() => {
             setBlips(prev => {
@@ -59,8 +59,6 @@ export default function SwanRadar({ onSuccess, onBreach }: SwanRadarProps) {
                     onBreach();
                     setIsBreached(true);
                     setTimeout(() => setIsBreached(false), 1000);
-                    // Remove breached blips (at most one per cycle to avoid spamming callbacks if not needed, 
-                    // though multiple could breach)
                     return nextBlips.filter(b => b.distance > 0);
                 }
 
