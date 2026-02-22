@@ -73,7 +73,44 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
     };
 
     return (
-        <div className="relative w-full aspect-square max-w-[280px] mx-auto flex items-center justify-center group/radar">
+        <div className="relative w-full aspect-square max-w-[280px] mx-auto flex items-center justify-center group/radar overflow-hidden rounded-full">
+            {/* Water Texture Layer */}
+            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <motion.path
+                        d="M0 50 Q 25 40, 50 50 T 100 50 V 100 H 0 Z"
+                        fill="url(#water-gradient)"
+                        animate={{
+                            d: [
+                                "M0 50 Q 25 45, 50 50 T 100 50 V 100 H 0 Z",
+                                "M0 50 Q 25 55, 50 50 T 100 50 V 100 H 0 Z",
+                                "M0 50 Q 25 45, 50 50 T 100 50 V 100 H 0 Z",
+                            ]
+                        }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <motion.path
+                        d="M0 60 Q 25 50, 50 60 T 100 60 V 100 H 0 Z"
+                        fill="url(#water-gradient)"
+                        opacity="0.5"
+                        animate={{
+                            d: [
+                                "M0 60 Q 25 65, 50 60 T 100 60 V 100 H 0 Z",
+                                "M0 60 Q 25 55, 50 60 T 100 60 V 100 H 0 Z",
+                                "M0 60 Q 25 65, 50 60 T 100 60 V 100 H 0 Z",
+                            ]
+                        }}
+                        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                    />
+                    <defs>
+                        <linearGradient id="water-gradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#22D3EE" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#22D3EE" stopOpacity="0.05" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+
             {/* Radar Grid Circles */}
             <div className="absolute inset-0 border border-cyan-500/10 rounded-full" />
             <div className="absolute inset-[15%] border border-cyan-500/20 rounded-full" />
