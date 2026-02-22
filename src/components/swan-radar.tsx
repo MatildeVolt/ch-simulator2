@@ -23,17 +23,28 @@ export default function SwanRadar({ onSuccess, onBreach }: SwanRadarProps) {
 
     // Spawn and update blips
     useEffect(() => {
+        // Initial burst
+        setBlips(Array.from({ length: 4 }).map(() => ({
+            id: Math.random().toString(36).substr(2, 9),
+            angle: Math.random() * 360,
+            distance: 40 + Math.random() * 60, // scattered distances
+            speed: 0.2 + Math.random() * 0.4,
+        })));
+
         const spawnInterval = setInterval(() => {
-            if (blips.length < 12) {
-                const newBlip: Blip = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    angle: Math.random() * 360,
-                    distance: 100, // starts at the edge
-                    speed: 0.2 + Math.random() * 0.4, // slightly faster movement
-                };
-                setBlips(prev => [...prev, newBlip]);
-            }
-        }, 1500);
+            setBlips(prev => {
+                if (prev.length < 15) {
+                    const newBlip: Blip = {
+                        id: Math.random().toString(36).substr(2, 9),
+                        angle: Math.random() * 360,
+                        distance: 100,
+                        speed: 0.2 + Math.random() * 0.4,
+                    };
+                    return [...prev, newBlip];
+                }
+                return prev;
+            });
+        }, 1000);
 
         const moveInterval = setInterval(() => {
             setBlips(prev => {
@@ -48,19 +59,20 @@ export default function SwanRadar({ onSuccess, onBreach }: SwanRadarProps) {
                     onBreach();
                     setIsBreached(true);
                     setTimeout(() => setIsBreached(false), 1000);
-                    // Remove breached blips
+                    // Remove breached blips (at most one per cycle to avoid spamming callbacks if not needed, 
+                    // though multiple could breach)
                     return nextBlips.filter(b => b.distance > 0);
                 }
 
                 return nextBlips;
             });
-        }, 50);
+        }, 30);
 
         return () => {
             clearInterval(spawnInterval);
             clearInterval(moveInterval);
         };
-    }, [blips.length, onBreach]);
+    }, [onBreach]);
 
     const handleNeutralize = (id: string) => {
         setBlips(prev => prev.filter(b => b.id !== id));
