@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
@@ -9,7 +14,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "CH-SIMULATOR",
-  description: "High-End Modern Scientific HUD Simulation.",
+  description: "High-End Modern Scientific HUD Simulation. Switzerland is not real.",
 };
 
 export default function RootLayout({
@@ -19,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${jetbrainsMono.variable} font-mono antialiased selection:bg-white/20 selection:text-white`}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased selection:bg-[#45B6FE]/20 selection:text-white`}>
         {children}
       </body>
     </html>
