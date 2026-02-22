@@ -24,16 +24,16 @@ export default function SwanRadar({ onSuccess, onBreach }: SwanRadarProps) {
     // Spawn and update blips
     useEffect(() => {
         const spawnInterval = setInterval(() => {
-            if (blips.length < 5) {
+            if (blips.length < 12) {
                 const newBlip: Blip = {
                     id: Math.random().toString(36).substr(2, 9),
                     angle: Math.random() * 360,
                     distance: 100, // starts at the edge
-                    speed: 0.2 + Math.random() * 0.3, // slow movement
+                    speed: 0.2 + Math.random() * 0.4, // slightly faster movement
                 };
                 setBlips(prev => [...prev, newBlip]);
             }
-        }, 4000);
+        }, 1500);
 
         const moveInterval = setInterval(() => {
             setBlips(prev => {
