@@ -1,142 +1,128 @@
 'use client'
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface Blip {
-    id: string;
-    angle: number; // in degrees
-    distance: number; // 0 to 100
+    id: number;
+    angle: number; // 0 to 360
+    distance: number; // 100 to 0 (edge to center)
     speed: number;
 }
 
 interface SwanRadarProps {
-    onSuccess: (id: string) => void;
     onBreach: () => void;
 }
 
-export default function SwanRadar({ onSuccess, onBreach }: SwanRadarProps) {
+export default function SwanRadar({ onBreach }: SwanRadarProps) {
     const [blips, setBlips] = useState<Blip[]>([]);
-    const [isBreached, setIsBreached] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const nextId = useRef(1);
 
-    // Spawn and update blips
+    // Initial spawn
     useEffect(() => {
-        // Initial start
-        setBlips([{
-            id: Math.random().toString(36).substr(2, 9),
+        const initialBlips = Array.from({ length: 3 }).map(() => ({
+            id: nextId.current++,
             angle: Math.random() * 360,
-            distance: 100,
-            speed: 0.05 + Math.random() * 0.1,
-        }]);
+            distance: 80 + Math.random() * 20,
+            speed: 0.05 + Math.random() * 0.1
+        }));
+        setBlips(initialBlips);
+    }, []);
 
-        const spawnInterval = setInterval(() => {
-            setBlips(prev => {
-                if (prev.length < 8) {
-                    const newBlip: Blip = {
-                        id: Math.random().toString(36).substr(2, 9),
-                        angle: Math.random() * 360,
-                        distance: 100,
-                        speed: 0.05 + Math.random() * 0.1,
-                    };
-                    return [...prev, newBlip];
-                }
-                return prev;
-            });
-        }, 2500);
+    // Movement Logic
+    useEffect(() => {
+        const moveBlips = () => {
+            setBlips((current) => {
+                let breachDetected = false;
+                const nextBlips = current.map(blip => {
+                    const nextDist = blip.distance - blip.speed;
+                    if (nextDist <= 2) {
+                        breachDetected = true;
+                        // Respawn immediately to maintain 3
+                        return {
+                            id: nextId.current++,
+                            angle: Math.random() * 360,
+                            distance: 100,
+                            speed: 0.05 + Math.random() * 0.1
+                        };
+                    }
+                    return { ...blip, distance: nextDist };
+                });
 
-        const moveInterval = setInterval(() => {
-            setBlips(prev => {
-                const nextBlips = prev.map(blip => ({
-                    ...blip,
-                    distance: blip.distance - blip.speed
-                }));
-
-                // Check for breach
-                const breached = nextBlips.some(b => b.distance <= 0);
-                if (breached) {
+                if (breachDetected) {
                     onBreach();
-                    setIsBreached(true);
-                    setTimeout(() => setIsBreached(false), 1000);
-                    return nextBlips.filter(b => b.distance > 0);
                 }
-
                 return nextBlips;
             });
-        }, 30);
-
-        return () => {
-            clearInterval(spawnInterval);
-            clearInterval(moveInterval);
         };
+
+        const interval = setInterval(moveBlips, 16); // ~60fps
+        return () => clearInterval(interval);
     }, [onBreach]);
 
-    const handleNeutralize = (id: string) => {
-        setBlips(prev => prev.filter(b => b.id !== id));
-        onSuccess(id);
+    const handleBlipClick = (id: number) => {
+        setBlips((current) =>
+            current.map(blip => blip.id === id ? {
+                id: nextId.current++,
+                angle: Math.random() * 360,
+                distance: 100,
+                speed: 0.05 + Math.random() * 0.1
+            } : blip)
+        );
     };
 
     return (
-        <div
-            ref={containerRef}
-            className={cn(
-                "relative w-full aspect-square max-w-[280px] mx-auto rounded-full border border-white/10 glass transition-colors duration-300",
-                isBreached && "border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]"
-            )}
-        >
-            {/* Concentric Circles */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[75%] h-[75%] border border-white/5 rounded-full" />
-                <div className="w-[50%] h-[50%] border border-white/5 rounded-full" />
-                <div className="w-[25%] h-[25%] border border-white/5 rounded-full" />
-                {/* Crosshair lines */}
-                <div className="absolute inset-0 flex items-center transition-opacity opacity-20">
-                    <div className="w-full h-[1px] bg-white/50" />
-                </div>
-                <div className="absolute inset-0 flex justify-center transition-opacity opacity-20">
-                    <div className="h-full w-[1px] bg-white/50" />
-                </div>
-            </div>
+        <div className="relative w-full aspect-square max-w-[280px] mx-auto flex items-center justify-center group/radar">
+            {/* Radar Grid Circles */}
+            <div className="absolute inset-0 border border-cyan-500/10 rounded-full" />
+            <div className="absolute inset-[15%] border border-cyan-500/20 rounded-full" />
+            <div className="absolute inset-[30%] border border-cyan-500/20 rounded-full" />
+            <div className="absolute inset-[45%] border border-cyan-500/30 rounded-full" />
 
-            {/* Rotating Sweep */}
+            {/* Center Dot */}
+            <div className="absolute w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)] z-20" />
+
+            {/* Scanning Sweep Line */}
             <motion.div
+                className="absolute w-1/2 h-[1px] bg-gradient-to-r from-transparent to-cyan-400/80 origin-left left-1/2 top-1/2 z-10"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 pointer-events-none"
-            >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-1/2 bg-gradient-to-t from-cyan-400/80 to-transparent origin-bottom" />
-            </motion.div>
+                style={{ filter: "drop-shadow(0 0 4px rgba(34,211,238,0.5))" }}
+            />
 
             {/* Blips */}
             <AnimatePresence>
                 {blips.map((blip) => {
-                    // Convert polar to cartesian
-                    const rad = (blip.angle - 90) * (Math.PI / 180);
+                    const rad = (blip.angle * Math.PI) / 180;
                     const x = 50 + (blip.distance / 2) * Math.cos(rad);
                     const y = 50 + (blip.distance / 2) * Math.sin(rad);
 
                     return (
                         <motion.button
                             key={blip.id}
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 2, opacity: 0 }}
-                            onClick={() => handleNeutralize(blip.id)}
-                            className="absolute w-3 h-3 -translate-x-1/2 -translate-y-1/2 z-20 group"
-                            style={{ left: `${x}%`, top: `${y}%` }}
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 0.8, scale: 1 }}
+                            exit={{ opacity: 0, scale: 2 }}
+                            onClick={() => handleBlipClick(blip.id)}
+                            className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-center cursor-pointer"
+                            style={{
+                                left: `${x}%`,
+                                top: `${y}%`,
+                            }}
                         >
-                            <span className="absolute inset-0 rounded-full bg-red-600 animate-ping opacity-75 group-hover:bg-red-400" />
-                            <span className="relative block w-full h-full rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)] border border-white/20" />
+                            <div className="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_12px_rgba(34,211,238,1)] animate-pulse" />
+                            <div className="absolute inset-0 border border-cyan-400 rounded-full animate-ping opacity-40" />
                         </motion.button>
                     );
                 })}
             </AnimatePresence>
 
-            {/* Center Core */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white/10 rounded-full border border-white/20 backdrop-blur-sm z-10">
-                <div className="absolute inset-0 rounded-full bg-cyan-400/20 animate-pulse" />
-            </div>
+            {/* HUD Markings */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full pb-1 text-[8px] font-mono text-cyan-400/40">000°</div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full pt-1 text-[8px] font-mono text-cyan-400/40">180°</div>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full pr-1 text-[8px] font-mono text-cyan-400/40">270°</div>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full pl-1 text-[8px] font-mono text-cyan-400/40">090°</div>
         </div>
     );
 }
