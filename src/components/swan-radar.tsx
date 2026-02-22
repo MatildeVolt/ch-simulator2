@@ -12,10 +12,12 @@ interface Blip {
 }
 
 interface SwanRadarProps {
-    onBreach: () => void;
+    onBreach?: () => void;
+    size?: number; // width/height in px
+    className?: string;
 }
 
-export default function SwanRadar({ onBreach }: SwanRadarProps) {
+export default function SwanRadar({ onBreach, size = 280, className }: SwanRadarProps) {
     const [blips, setBlips] = useState<Blip[]>([]);
     const nextId = useRef(1);
 
@@ -50,7 +52,7 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
                     return { ...blip, distance: nextDist };
                 });
 
-                if (breachDetected) {
+                if (breachDetected && onBreach) {
                     onBreach();
                 }
                 return nextBlips;
@@ -72,8 +74,13 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
         );
     };
 
+    const swanSize = Math.max(12, size * 0.08);
+
     return (
-        <div className="relative w-full aspect-square max-w-[280px] mx-auto flex items-center justify-center group/radar overflow-hidden rounded-full">
+        <div
+            className={cn("relative flex items-center justify-center group/radar overflow-hidden rounded-full transition-all duration-300", className)}
+            style={{ width: size, height: size }}
+        >
             {/* Water Texture Layer */}
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
                 <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -118,7 +125,7 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
             <div className="absolute inset-[45%] border border-cyan-500/30 rounded-full" />
 
             {/* Center Dot */}
-            <div className="absolute w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)] z-20" />
+            <div className="absolute w-1.5 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)] z-20" />
 
             {/* Scanning Sweep Line */}
             <motion.div
@@ -142,17 +149,20 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 1.5 }}
                             onClick={() => handleBlipClick(blip.id)}
-                            className="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-center cursor-pointer group/swan"
+                            className="absolute z-30 flex items-center justify-center cursor-pointer group/swan"
                             style={{
                                 left: `${x}%`,
                                 top: `${y}%`,
+                                width: swanSize,
+                                height: swanSize,
+                                transform: 'translate(-50%, -50%)'
                             }}
                         >
                             <div className="relative w-full h-full flex items-center justify-center">
                                 {/* Swan Illustration */}
                                 <svg
-                                    width="24"
-                                    height="24"
+                                    width="100%"
+                                    height="100%"
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     xmlns="http://www.w3.org/2000/svg"
@@ -161,26 +171,13 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
                                         blip.angle > 90 && blip.angle < 270 ? "scale-x-1" : "scale-x-[-1]"
                                     )}
                                 >
-                                    {/* Body */}
-                                    <path
-                                        d="M4 14C4 11 6 9 9 9C11 9 12 10 13 11C14 10 16 9 18 9C20 9 22 11 22 14C22 18 18 20 13 20C8 20 4 18 4 14Z"
-                                        fill="white"
-                                    />
-                                    {/* Neck & Head */}
-                                    <path
-                                        d="M13 11L14 6C14 5 15 4 16 4C17 4 18 5 18 6L18 9"
-                                        stroke="white"
-                                        strokeWidth="2.5"
-                                        strokeLinecap="round"
-                                    />
+                                    <path d="M4 14C4 11 6 9 9 9C11 9 12 10 13 11C14 10 16 9 18 9C20 9 22 11 22 14C22 18 18 20 13 20C8 20 4 18 4 14Z" fill="white" />
+                                    <path d="M13 11L14 6C14 5 15 4 16 4C17 4 18 5 18 6L18 9" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
                                     <circle cx="16.5" cy="4.5" r="1.5" fill="white" />
-                                    {/* Beak */}
                                     <path d="M17.5 4.5L20 5L18 6L17.5 4.5Z" fill="#FACC15" />
-                                    {/* Eye */}
                                     <circle cx="16" cy="4" r="0.5" fill="black" />
                                 </svg>
 
-                                {/* Proximity Pulse if getting too close */}
                                 {blip.distance < 30 && (
                                     <div className="absolute inset-0 border border-red-500 rounded-full animate-ping opacity-20" />
                                 )}
@@ -191,10 +188,8 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
             </AnimatePresence>
 
             {/* HUD Markings */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full pb-1 text-[8px] font-mono text-cyan-400/40">000°</div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full pt-1 text-[8px] font-mono text-cyan-400/40">180°</div>
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full pr-1 text-[8px] font-mono text-cyan-400/40">270°</div>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full pl-1 text-[8px] font-mono text-cyan-400/40">090°</div>
+            <div className="absolute top-1 left-1/2 -translate-x-1/2 text-[7px] font-mono text-cyan-400/30 uppercase">000°</div>
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[7px] font-mono text-cyan-400/30 uppercase">180°</div>
         </div>
     );
 }

@@ -92,7 +92,7 @@ export default function KernelPage() {
                         <CHCOW01 />
                     </MotionCard>
 
-                    {/* Module 02 — Swan Radar Pillar & Instructions */}
+                    {/* Module 02 — Dual Swan Radar Pillar & Instructions */}
                     <div className="flex flex-col gap-[10px] w-full items-stretch lg:col-span-2 lg:row-span-1">
                         <MotionCard
                             className={cn(
@@ -110,12 +110,32 @@ export default function KernelPage() {
                                 className="relative z-10"
                             >
                                 <div className="absolute top-0 left-0 z-10 pointer-events-none">
-                                    <p className="hud-label !text-cyan-400">S_RADAR // PERIMETER</p>
-                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Swan Radar</h2>
+                                    <p className="hud-label !text-cyan-400">S_RADAR // MULTI_LEVEL</p>
+                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Dual Monitoring</h2>
                                 </div>
 
-                                <div className="mt-12">
-                                    <SwanRadar onBreach={handleBreach} />
+                                <div className="mt-14 flex items-center justify-between gap-6 px-4">
+                                    {/* Main Radar */}
+                                    <div className="relative">
+                                        <p className="absolute -top-6 left-1/2 -translate-x-1/2 font-mono text-[9px] text-cyan-400/50 uppercase tracking-widest">Primary // CORE</p>
+                                        <SwanRadar size={220} onBreach={handleBreach} />
+                                    </div>
+
+                                    {/* Secondary Mini Radar */}
+                                    <div className="relative hidden sm:flex flex-col items-center">
+                                        <p className="absolute -top-6 left-1/2 -translate-x-1/2 font-mono text-[9px] text-cyan-400/50 uppercase tracking-widest">Monitor // 02</p>
+                                        <SwanRadar size={110} className="border border-white/5 bg-black/20" />
+                                        <div className="mt-4 flex flex-col gap-1 w-full">
+                                            <div className="h-1 w-full bg-cyan-400/20 rounded-full overflow-hidden">
+                                                <motion.div
+                                                    className="h-full bg-cyan-400"
+                                                    animate={{ width: ["10%", "90%", "30%", "70%"] }}
+                                                    transition={{ duration: 10, repeat: Infinity }}
+                                                />
+                                            </div>
+                                            <p className="font-mono text-[8px] text-cyan-400/40 text-center uppercase tracking-tighter">Variance Sync</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </motion.div>
                         </MotionCard>
