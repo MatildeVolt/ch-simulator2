@@ -102,17 +102,52 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
                         <motion.button
                             key={blip.id}
                             initial={{ opacity: 0, scale: 0 }}
-                            animate={{ opacity: 0.8, scale: 1 }}
-                            exit={{ opacity: 0, scale: 2 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.5 }}
                             onClick={() => handleBlipClick(blip.id)}
-                            className="absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-center cursor-pointer"
+                            className="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 z-30 flex items-center justify-center cursor-pointer group/swan"
                             style={{
                                 left: `${x}%`,
                                 top: `${y}%`,
                             }}
                         >
-                            <div className="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_12px_rgba(34,211,238,1)] animate-pulse" />
-                            <div className="absolute inset-0 border border-cyan-400 rounded-full animate-ping opacity-40" />
+                            <div className="relative w-full h-full flex items-center justify-center">
+                                {/* Swan Illustration */}
+                                <svg
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className={cn(
+                                        "drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] transition-transform duration-300 group-hover/swan:scale-110",
+                                        blip.angle > 90 && blip.angle < 270 ? "scale-x-1" : "scale-x-[-1]"
+                                    )}
+                                >
+                                    {/* Body */}
+                                    <path
+                                        d="M4 14C4 11 6 9 9 9C11 9 12 10 13 11C14 10 16 9 18 9C20 9 22 11 22 14C22 18 18 20 13 20C8 20 4 18 4 14Z"
+                                        fill="white"
+                                    />
+                                    {/* Neck & Head */}
+                                    <path
+                                        d="M13 11L14 6C14 5 15 4 16 4C17 4 18 5 18 6L18 9"
+                                        stroke="white"
+                                        strokeWidth="2.5"
+                                        strokeLinecap="round"
+                                    />
+                                    <circle cx="16.5" cy="4.5" r="1.5" fill="white" />
+                                    {/* Beak */}
+                                    <path d="M17.5 4.5L20 5L18 6L17.5 4.5Z" fill="#FACC15" />
+                                    {/* Eye */}
+                                    <circle cx="16" cy="4" r="0.5" fill="black" />
+                                </svg>
+
+                                {/* Proximity Pulse if getting too close */}
+                                {blip.distance < 30 && (
+                                    <div className="absolute inset-0 border border-red-500 rounded-full animate-ping opacity-20" />
+                                )}
+                            </div>
                         </motion.button>
                     );
                 })}
