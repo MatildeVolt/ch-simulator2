@@ -5,6 +5,7 @@ import Navbar from "@/components/navbar";
 import CHCOW01 from "@/components/ch-cow-01";
 import MotionCard from "@/components/motion-card";
 import SBBEngine from "@/components/sbb-engine";
+import SwanRadar from "@/components/swan-radar";
 import { cn } from "@/lib/utils";
 
 const INITIAL_LOGS = [
@@ -73,42 +74,45 @@ export default function KernelPage() {
                         <CHCOW01 />
                     </MotionCard>
 
-                    {/* Module 02 — Subject Demographics */}
-                    <MotionCard className="p-6 lg:col-span-2" delay={0.2}>
-                        <div className="flex flex-col h-full">
-                            <div className="flex items-start justify-between mb-8">
-                                <div>
-                                    <p className="hud-label">S_DATA // SUBJECTS</p>
-                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Population Analytics</h2>
-                                </div>
-                                <span className="neon-badge bg-[#45B6FE]/10 border-[#45B6FE]/20 text-[#45B6FE]">Realtime Sync</span>
+                    {/* Module 02 — Swan Radar Pillar & Instructions */}
+                    <div className="flex flex-col gap-[10px] w-full items-stretch lg:col-span-2">
+                        <MotionCard className="p-6 flex flex-col relative h-auto overflow-hidden" delay={0.2}>
+                            <div className="absolute top-6 left-6 z-10 pointer-events-none">
+                                <p className="hud-label">S_RADAR // SECURITY</p>
+                                <h2 className="text-xl font-bold text-white tracking-tight mt-1">Swan Radar</h2>
                             </div>
 
-                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-5">
-                                {[
-                                    { label: "Designated Subjects", value: "8,720,421", unit: "UNITS", delta: "+0.003%", color: "cyan" },
-                                    { label: "Anomalous Variance", value: "0.002", unit: "INDEX", delta: "STABLE", color: "white" },
-                                    { label: "Cognitive Compliance", value: "99.91", unit: "PERCENT", delta: "+0.01%", color: "green" },
-                                ].map((stat) => (
-                                    <div key={stat.label} className="bg-black/30 border border-white/5 rounded-2xl p-5 flex flex-col justify-between group/stat hover:border-white/10 transition-colors">
-                                        <p className="hud-label !opacity-40">{stat.label}</p>
-                                        <div className="mt-2">
-                                            <div className="flex items-baseline gap-1.5">
-                                                <span className="font-mono text-2xl font-bold text-white group-hover:glow-cyan transition-all duration-300">
-                                                    {stat.value}
-                                                </span>
-                                                <span className="font-mono text-[9px] text-white/30">{stat.unit}</span>
-                                            </div>
-                                            <p className="font-mono text-[10px] text-[#45B6FE] font-bold mt-1.5 opacity-80">{stat.delta}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="mt-12 flex items-center justify-center min-h-[220px]">
+                                <SwanRadar
+                                    onSuccess={(id) => setLogs(prev => [{
+                                        id: `SCAN_${Math.floor(Math.random() * 9000) + 1000}`,
+                                        msg: "[SUCCESS] SWAN_SIGNATURE_PURGED",
+                                        time: new Date().toLocaleTimeString('en-CH', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+                                        level: 'nominal'
+                                    }, ...prev].slice(0, 10))}
+                                    onBreach={() => setLogs(prev => [{
+                                        id: `ALERT_${Math.floor(Math.random() * 9000) + 1000}`,
+                                        msg: "[CRITICAL] KERNEL_BREACH_DETECTED",
+                                        time: new Date().toLocaleTimeString('en-CH', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+                                        level: 'warn'
+                                    }, ...prev].slice(0, 10))}
+                                />
                             </div>
+                        </MotionCard>
+
+                        {/* Instruction Card */}
+                        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-xl flex flex-col gap-2">
+                            <div className="hud-label !text-cyan-400 font-mono !text-[10px] tracking-widest opacity-100">
+                                // SYSTEM_GUIDE
+                            </div>
+                            <p className="font-mono text-[11px] leading-relaxed text-white/70">
+                                Identify and click unauthorized <span className="text-cyan-400 font-bold">[SWAN_SIGNATURES]</span> on the radar to prevent a kernel breach.
+                            </p>
                         </div>
-                    </MotionCard>
+                    </div>
 
                     {/* Module 03 — Anomaly Log */}
-                    <MotionCard className="p-6" delay={0.3}>
+                    <MotionCard className="p-6 lg:row-span-1" delay={0.3}>
                         <div className="flex flex-col h-full">
                             <div className="flex items-start justify-between mb-6">
                                 <div>
