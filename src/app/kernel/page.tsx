@@ -1,136 +1,166 @@
 import Navbar from "@/components/navbar";
 import CHCOW01 from "@/components/ch-cow-01";
+import MotionCard from "@/components/motion-card";
+import { cn } from "@/lib/utils";
 
 export default async function KernelPage() {
     return (
-        <div className="min-h-screen pt-24 pb-12 px-6">
+        <div className="min-h-screen pt-28 pb-20 px-6 sm:px-10">
             <div className="max-w-7xl mx-auto">
 
                 {/* Page Header */}
-                <div className="mb-8 flex items-end justify-between">
-                    <div>
-                        <p className="hud-label mb-1">// MODULE ACCESS GRANTED</p>
-                        <h1 className="text-4xl font-bold tracking-tight text-white">
-                            Kernel
-                            <span className="text-[#45B6FE] ml-2 font-mono text-2xl">v1.0</span>
+                <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                    <div className="space-y-1">
+                        <p className="hud-label ml-0.5 !text-[#45B6FE] !opacity-100 animate-pulse">
+              // AUTH_TOKEN_VALIDATED: KERNEL_LEVEL_01
+                        </p>
+                        <h1 className="text-5xl font-bold tracking-tighter text-white drop-shadow-sm">
+                            Kernel <span className="text-[#45B6FE] font-mono text-xl align-top ml-2 brightness-125">v1.2</span>
                         </h1>
                     </div>
-                    <div className="flex items-center gap-2 glass px-4 py-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                        <span className="hud-label text-green-400">All systems operational</span>
+
+                    <div className="flex items-center gap-3 px-5 py-2.5 rounded-full border border-white/5 bg-white/[0.02] backdrop-blur-md">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20" />
+                            <div className="w-2 h-2 rounded-full bg-green-400 relative z-10" />
+                        </div>
+                        <span className="hud-label !text-green-400 !opacity-100 font-bold">System Online // Switzerland Intact</span>
                     </div>
                 </div>
 
                 {/* Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[280px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[300px]">
 
-                    {/* Module 01 — CH-COW-01 Bovine Interface (tall, left) */}
-                    <div className="glass-panel group relative overflow-hidden p-6 flex flex-col">
-                        <div className="accent-line" />
+                    {/* Module 01 — CH-COW-01 Bovine Interface */}
+                    <MotionCard className="p-6 md:row-span-1" delay={0.1}>
                         <CHCOW01 />
-                    </div>
+                    </MotionCard>
 
                     {/* Module 02 — Subject Demographics */}
-                    <div className="glass-panel group relative overflow-hidden p-6 flex flex-col lg:col-span-2">
-                        <div className="accent-line" />
-                        <div className="flex items-start justify-between mb-4">
-                            <div>
-                                <p className="hud-label">MODULE 02</p>
-                                <h2 className="text-lg font-semibold text-white tracking-wide mt-0.5">Subject Demographics</h2>
+                    <MotionCard className="p-6 lg:col-span-2" delay={0.2}>
+                        <div className="flex flex-col h-full">
+                            <div className="flex items-start justify-between mb-8">
+                                <div>
+                                    <p className="hud-label">S_DATA // SUBJECTS</p>
+                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Population Analytics</h2>
+                                </div>
+                                <span className="neon-badge bg-[#45B6FE]/10 border-[#45B6FE]/20 text-[#45B6FE]">Realtime Sync</span>
                             </div>
-                            <span className="swiss-badge">LIVE</span>
-                        </div>
-                        <div className="flex-1 grid grid-cols-3 gap-3">
-                            {[
-                                { label: "Active Subjects", value: "8,720,421", delta: "+0.003%" },
-                                { label: "Anomaly Rate", value: "0.002%", delta: "−stable" },
-                                { label: "Compliance", value: "99.91%", delta: "+0.01%" },
-                            ].map((stat) => (
-                                <div key={stat.label} className="bg-black/30 border border-white/5 rounded-xl p-4 flex flex-col justify-between hover:border-[#45B6FE]/20 transition-colors">
-                                    <p className="hud-label mb-2">{stat.label}</p>
-                                    <div>
-                                        <p className="font-mono text-2xl font-bold text-white">{stat.value}</p>
-                                        <p className="font-mono text-[10px] text-[#45B6FE] mt-1">{stat.delta}</p>
+
+                            <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-5">
+                                {[
+                                    { label: "Designated Subjects", value: "8,720,421", unit: "UNITS", delta: "+0.003%", color: "cyan" },
+                                    { label: "Anomalous Variance", value: "0.002", unit: "INDEX", delta: "STABLE", color: "white" },
+                                    { label: "Cognitive Compliance", value: "99.91", unit: "PERCENT", delta: "+0.01%", color: "green" },
+                                ].map((stat) => (
+                                    <div key={stat.label} className="bg-black/30 border border-white/5 rounded-2xl p-5 flex flex-col justify-between group/stat hover:border-white/10 transition-colors">
+                                        <p className="hud-label !opacity-40">{stat.label}</p>
+                                        <div className="mt-2">
+                                            <div className="flex items-baseline gap-1.5">
+                                                <span className="font-mono text-2xl font-bold text-white group-hover:glow-cyan transition-all duration-300">
+                                                    {stat.value}
+                                                </span>
+                                                <span className="font-mono text-[9px] text-white/30">{stat.unit}</span>
+                                            </div>
+                                            <p className="font-mono text-[10px] text-[#45B6FE] font-bold mt-1.5 opacity-80">{stat.delta}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    </MotionCard>
 
-                    {/* Module 03 — System Anomalies */}
-                    <div className="glass-panel group relative overflow-hidden p-6 flex flex-col">
-                        <div className="accent-line" />
-                        <div className="flex items-start justify-between mb-4">
-                            <div>
-                                <p className="hud-label">MODULE 03</p>
-                                <h2 className="text-lg font-semibold text-white tracking-wide mt-0.5">Anomaly Log</h2>
-                            </div>
-                            <span className="swiss-badge text-red-400 border-red-400/30">2 WARN</span>
-                        </div>
-                        <div className="flex-1 space-y-2 overflow-hidden">
-                            {[
-                                { id: "WARN_73", msg: "Alps texture buffer overflow — Sector 7G", time: "14:02:11", level: "warn" },
-                                { id: "WARN_51", msg: "Train delay anomaly — Zürich HB +0.003ms", time: "11:40:00", level: "warn" },
-                                { id: "INFO_12", msg: "Population mood stabilized — chocolate drop", time: "09:15:33", level: "info" },
-                                { id: "INFO_01", msg: "Kernel boot complete — all modules loaded", time: "00:00:01", level: "info" },
-                            ].map((log) => (
-                                <div key={log.id} className="flex items-center gap-3 bg-black/20 rounded-lg px-3 py-2 border border-white/5">
-                                    <span className={`font-mono text-[10px] font-bold w-14 shrink-0 ${log.level === 'warn' ? 'text-red-400' : 'text-[#45B6FE]'}`}>
-                                        {log.id}
-                                    </span>
-                                    <p className="font-mono text-[10px] text-white/50 flex-1 truncate">{log.msg}</p>
-                                    <span className="font-mono text-[10px] text-white/25 shrink-0">{log.time}</span>
+                    {/* Module 03 — Anomaly Log */}
+                    <MotionCard className="p-6" delay={0.3}>
+                        <div className="flex flex-col h-full">
+                            <div className="flex items-start justify-between mb-6">
+                                <div>
+                                    <p className="hud-label">S_LOG // ANOMALIES</p>
+                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1 truncate">Security Feed</h2>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
+                                <div className="px-2 py-0.5 rounded border border-red-500/30 bg-red-500/10">
+                                    <span className="font-mono text-[9px] text-red-400 font-bold uppercase animate-pulse">2 ALERT</span>
+                                </div>
+                            </div>
 
-                    {/* Module 04 — Network Uplink */}
-                    <div className="glass-panel group relative overflow-hidden p-6 flex flex-col">
-                        <div className="accent-line" />
-                        <div className="flex items-start justify-between mb-4">
-                            <div>
-                                <p className="hud-label">MODULE 04</p>
-                                <h2 className="text-lg font-semibold text-white tracking-wide mt-0.5">Network Uplink</h2>
+                            <div className="flex-1 space-y-2.5 overflow-hidden">
+                                {[
+                                    { id: "WARN_73", msg: "Alps mesh buffer limit", time: "14:02", level: "warn" },
+                                    { id: "WARN_51", msg: "HB Train clock skew", time: "11:40", level: "warn" },
+                                    { id: "INFO_12", msg: "Mood stabilization deployed", time: "09:15", level: "info" },
+                                    { id: "BOOT_01", msg: "Switzerland.exe started", time: "00:00", level: "info" },
+                                ].map((log) => (
+                                    <div key={log.id} className="flex items-center gap-3 bg-[rgba(255,255,255,0.02)] rounded-xl px-4 py-2.5 border border-white/5 hover:border-white/10 transition-colors group/log">
+                                        <span className={`font-mono text-[10px] font-black tracking-tighter w-12 shrink-0 ${log.level === 'warn' ? 'text-red-500' : 'text-[#45B6FE]'}`}>
+                                            {log.id}
+                                        </span>
+                                        <p className="font-mono text-[10px] text-white/60 flex-1 truncate group-hover/log:text-white/90 transition-colors uppercase font-medium">{log.msg}</p>
+                                        <span className="font-mono text-[9px] text-white/20 shrink-0">{log.time}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                        <div className="flex-1 flex items-center justify-center">
-                            <div className="relative w-32 h-32 flex items-center justify-center">
-                                {/* Pulsing rings */}
-                                <div className="absolute w-full h-full rounded-full border border-[#45B6FE]/10 animate-ping" style={{ animationDuration: '3s' }} />
-                                <div className="absolute w-3/4 h-3/4 rounded-full border border-[#45B6FE]/20 animate-ping" style={{ animationDuration: '2s' }} />
-                                <div className="absolute w-full h-full rounded-full border border-[#45B6FE]/30 animate-spin" style={{ animationDuration: '8s', borderTopColor: '#45B6FE' }} />
-                                <div className="z-10 text-center">
-                                    <p className="font-mono text-[10px] text-[#45B6FE] tracking-widest">SYNC</p>
-                                    <p className="font-mono text-xs text-white/40">99.9%</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </MotionCard>
 
-                    {/* Module 05 — Environment Controls */}
-                    <div className="glass-panel group relative overflow-hidden p-6 flex flex-col">
-                        <div className="accent-line" />
-                        <div className="flex items-start justify-between mb-4">
-                            <div>
-                                <p className="hud-label">MODULE 05</p>
-                                <h2 className="text-lg font-semibold text-white tracking-wide mt-0.5">Environment Controls</h2>
+                    {/* Module 04 — Network Radar */}
+                    <MotionCard className="p-6 flex flex-col items-center justify-center relative" delay={0.4}>
+                        <div className="absolute top-6 left-6">
+                            <p className="hud-label">S_NET // UPLINK</p>
+                            <h2 className="text-xl font-bold text-white tracking-tight mt-1">Satellite</h2>
+                        </div>
+
+                        <div className="relative w-40 h-40 mt-8">
+                            <div className="absolute inset-0 rounded-full border border-white/[0.03]" />
+                            <div className="absolute inset-4 rounded-full border border-white/[0.03]" />
+                            <div className="absolute inset-8 rounded-full border border-white/[0.03]" />
+                            <div className="absolute inset-0 rounded-full border-t border-[#45B6FE]/40 animate-spin" style={{ animationDuration: '4s' }} />
+                            <div className="absolute inset-0 rounded-full border-l border-[#45B6FE]/10 animate-spin" style={{ animationDuration: '6s' }} />
+
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="text-center">
+                                    <p className="font-mono text-sm font-black text-white glow-cyan">SYNC</p>
+                                    <p className="font-mono text-[10px] text-white/30 uppercase mt-0.5">Established</p>
+                                </div>
+                            </div>
+
+                            {/* Ping point */}
+                            <div className="absolute top-1/4 right-1/4 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping" />
+                        </div>
+                    </MotionCard>
+
+                    {/* Module 05 — Environmental Override */}
+                    <MotionCard className="p-6 flex flex-col" delay={0.5}>
+                        <div className="flex flex-col h-full">
+                            <div className="flex items-start justify-between mb-6 text-right">
+                                <div className="text-left">
+                                    <p className="hud-label">S_ENV // CORE</p>
+                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Climate Control</h2>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 grid grid-cols-2 gap-3">
+                                {[
+                                    { label: "PRECIP", value: "42%", active: true },
+                                    { label: "TEMP_EXT", value: "8.2°C", active: true },
+                                    { label: "WIND_VEC", value: "OFF", active: false },
+                                    { label: "FOG_DENS", value: "3%", active: true },
+                                ].map((ctrl) => (
+                                    <div key={ctrl.label} className={cn(
+                                        "rounded-2xl border p-4 flex flex-col justify-between transition-all group/ctrl cursor-pointer",
+                                        ctrl.active
+                                            ? "border-[#45B6FE]/10 bg-[#45B6FE]/5 hover:bg-[#45B6FE]/10 hover:border-[#45B6FE]/30"
+                                            : "border-white/5 bg-black/40 opacity-40 hover:opacity-100"
+                                    )}>
+                                        <p className="hud-label !text-[8px] tracking-[0.3em]">{ctrl.label}</p>
+                                        <p className={cn(
+                                            "font-mono text-lg font-black tracking-tight",
+                                            ctrl.active ? "text-white group-hover/ctrl:glow-cyan" : "text-white/20"
+                                        )}>{ctrl.value}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                            {[
-                                { label: "Precipitation", value: "42%", active: true },
-                                { label: "Temperature", value: "8.2°C", active: true },
-                                { label: "Wind Layer", value: "OFF", active: false },
-                                { label: "Fog Matrix", value: "3%", active: true },
-                            ].map((ctrl) => (
-                                <div key={ctrl.label} className={`rounded-xl border p-3 flex flex-col gap-1 cursor-pointer transition-all ${ctrl.active ? 'border-[#45B6FE]/20 bg-[#45B6FE]/5 hover:bg-[#45B6FE]/10' : 'border-white/5 bg-black/20 hover:border-white/10'}`}>
-                                    <p className="hud-label">{ctrl.label}</p>
-                                    <p className={`font-mono text-sm font-bold ${ctrl.active ? 'text-[#45B6FE]' : 'text-white/30'}`}>{ctrl.value}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    </MotionCard>
 
                 </div>
             </div>

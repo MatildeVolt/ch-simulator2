@@ -24,8 +24,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased selection:bg-[#45B6FE]/20 selection:text-white`}>
-        {children}
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased selection:bg-[#45B6FE]/30 selection:text-white`}>
+        {/* Global HUD Layout Backgrounds */}
+        <div className="hud-grid-overlay" />
+        <div className="mountain-wireframe" />
+
+        <div className="relative z-10">
+          {children}
+        </div>
       </body>
     </html>
   );

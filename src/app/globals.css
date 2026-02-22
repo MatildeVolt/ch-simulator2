@@ -9,96 +9,50 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
   --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --color-ring: var(--ring);
+  --color-hud-cyan: #45B6FE;
+  --color-hud-red: #FF0028;
 }
 
 /* ============================================
-   CH-SIMULATOR Design Tokens
+   CH-SIMULATOR Design Tokens - Wireframe HUD
    ============================================ */
 :root,
 .dark {
   --radius: 1rem;
 
-  /* Core Palette */
-  --background: #0B0C10;
+  /* Deep Midnight Gradient Foundation */
+  --background-start: #05070A;
+  --background-end: #0B101A;
+  --background: var(--background-start);
   --foreground: #f0f0f0;
+
+  /* HUD Colors */
   --swiss-red: #FF0028;
-  --accent-blue: #45B6FE;
-  --accent-neon: #E8FF00;
+  --cyan-hud: #45B6FE;
+  --neon-yellow: #E8FF00;
 
-  /* Glass Surfaces */
-  --card: rgba(255, 255, 255, 0.03);
-  --card-foreground: #f0f0f0;
-  --popover: rgba(11, 12, 16, 0.85);
-  --popover-foreground: #f0f0f0;
+  /* Advanced Glassmorphism */
+  --card-bg: rgba(10, 15, 25, 0.7);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-blur: 12px;
 
-  /* Hierarchy */
+  /* State & Hierarchy */
   --primary: #ffffff;
-  --primary-foreground: #0B0C10;
+  --primary-foreground: #05070A;
   --secondary: rgba(255, 255, 255, 0.05);
   --secondary-foreground: #ffffff;
-  --muted: rgba(255, 255, 255, 0.05);
-  --muted-foreground: #71717a;
-  --accent: rgba(255, 255, 255, 0.08);
-  --accent-foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.1);
+  --muted-foreground: #8a8a93;
+  --accent: rgba(69, 182, 254, 0.15);
+  --accent-foreground: #45B6FE;
   --destructive: #FF0028;
 
-  /* Borders & Inputs */
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: rgba(69, 182, 254, 0.4);
-
-  /* Charts */
-  --chart-1: #45B6FE;
-  --chart-2: #818cf8;
-  --chart-3: #c084fc;
-  --chart-4: #FF0028;
-  --chart-5: #E8FF00;
-
-  /* Sidebar */
-  --sidebar: #0B0C10;
-  --sidebar-foreground: #f0f0f0;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #0B0C10;
-  --sidebar-accent: rgba(255, 255, 255, 0.05);
-  --sidebar-accent-foreground: #f0f0f0;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: rgba(69, 182, 254, 0.4);
+  /* Borders & Glows */
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.05);
+  --ring: rgba(69, 182, 254, 0.5);
 }
 
 /* ============================================
@@ -106,53 +60,109 @@
    ============================================ */
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--border);
+    outline-color: var(--ring);
   }
 
   html {
     color-scheme: dark;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-background text-foreground antialiased min-h-screen relative overflow-x-hidden;
-    /* Dot-Matrix Grid Overlay */
-    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 28px 28px;
-    background-position: center center;
+    @apply text-foreground antialiased min-h-screen relative overflow-x-hidden;
+    background: linear-gradient(180deg, var(--background-start) 0%, var(--background-end) 100%);
     background-attachment: fixed;
   }
 }
 
 /* ============================================
-   Glassmorphism Utilities
+   HUD Overlays
    ============================================ */
-@utility glass {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg rounded-2xl;
+.hud-grid-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    linear-gradient(rgba(69, 182, 254, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(69, 182, 254, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
 }
 
-@utility glass-panel {
-  @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-2xl rounded-2xl;
-}
-
-@utility glass-strong {
-  @apply bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl;
+.mountain-wireframe {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40vh;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url('/mountain_wireframe.png');
+  background-size: cover;
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  opacity: 0.4;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)) brightness(1.2);
+  mask-image: linear-gradient(to top, black 20%, transparent 100%);
 }
 
 /* ============================================
-   HUD UI Utilities
+   Advanced Glassmorphism (Raw CSS for Stability)
+   ============================================ */
+@utility glass {
+  background-color: var(--card-bg);
+  backdrop-filter: blur(var(--card-blur));
+  -webkit-backdrop-filter: blur(var(--card-blur));
+  border: 1px solid var(--card-border);
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@utility glass-hover {
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(15, 22, 35, 0.8);
+    box-shadow: 0 0 20px rgba(69, 182, 254, 0.15);
+  }
+}
+
+@utility glass-panel {
+  background-color: var(--card-bg);
+  backdrop-filter: blur(var(--card-blur));
+  -webkit-backdrop-filter: blur(var(--card-blur));
+  border: 1px solid var(--card-border);
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================
+   HUD UI Elements
    ============================================ */
 @utility hud-label {
-  @apply text-[10px] tracking-[0.2em] uppercase text-white/40 font-mono;
+  @apply text-[10px] tracking-[0.25em] uppercase text-hud-cyan opacity-80 font-mono font-semibold;
 }
 
 @utility hud-value {
-  @apply text-sm font-mono tracking-wide text-white;
+  @apply text-sm font-mono tracking-wider text-white;
+  filter: brightness(1.2);
 }
 
-@utility accent-line {
-  @apply absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#45B6FE] to-transparent opacity-60;
+@utility glow-cyan {
+  color: var(--cyan-hud);
+  filter: drop-shadow(0 0 8px rgba(69, 182, 254, 0.6));
 }
 
-@utility swiss-badge {
-  @apply inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-mono tracking-widest uppercase rounded border border-white/10 bg-white/5;
+@utility glow-red {
+  color: var(--swiss-red);
+  filter: drop-shadow(0 0 8px rgba(255, 0, 40, 0.6));
+}
+
+@utility neon-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[9px] font-mono tracking-[0.2em] uppercase rounded-full border border-white/10 bg-white/5 text-white/70;
 }

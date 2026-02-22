@@ -32,24 +32,21 @@ export default function CHCOW01() {
     const [isTyping, setIsTyping] = useState(true);
     const [cursor, setCursor] = useState(true);
 
-    // Blinking cursor
     useEffect(() => {
         const interval = setInterval(() => setCursor(c => !c), 500);
         return () => clearInterval(interval);
     }, []);
 
-    // Cycle through messages
     useEffect(() => {
         const interval = setInterval(() => {
             const next = STATUS_MESSAGES[Math.floor(Math.random() * STATUS_MESSAGES.length)];
             setCurrentMessage(next);
             setDisplayedText("");
             setIsTyping(true);
-        }, 5000);
+        }, 6000);
         return () => clearInterval(interval);
     }, []);
 
-    // Typewriter effect
     useEffect(() => {
         if (!isTyping) return;
         let i = 0;
@@ -61,32 +58,33 @@ export default function CHCOW01() {
                 setIsTyping(false);
                 clearInterval(interval);
             }
-        }, 28);
+        }, 25);
         return () => clearInterval(interval);
     }, [currentMessage, isTyping]);
 
     return (
-        <div className="flex flex-col gap-3 h-full">
+        <div className="flex flex-col gap-4 h-full">
             {/* Swiss Red Badge */}
             <div className="flex items-center justify-between">
-                <span className="swiss-badge text-[#FF0028] border-[#FF0028]/30">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF0028] animate-pulse" />
+                <span className="neon-badge !text-[#FF0028] !border-[#FF0028]/20 bg-[#FF0028]/5">
+                    <span className="w-1 h-1 rounded-full bg-[#FF0028] shadow-[0_0_8px_rgba(255,0,40,0.8)] animate-pulse" />
                     CH-COW-01
                 </span>
-                <span className="hud-label">BOVINE INTERFACE</span>
+                <span className="hud-label !text-white/40">BOVINE INTERFACE</span>
             </div>
 
             {/* ASCII Cow */}
-            <pre className="font-mono text-[11px] leading-tight text-[#FF0028]/80 select-none whitespace-pre">
+            <pre className="font-mono text-[10px] leading-tight text-white/90 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] select-none whitespace-pre pl-2">
                 {COW_ASCII}
             </pre>
 
             {/* Terminal Output */}
-            <div className="flex-1 bg-black/40 rounded-xl border border-white/5 p-3 mt-1 overflow-hidden">
-                <div className="hud-label mb-2">// SYSTEM OUTPUT</div>
-                <p className="font-mono text-xs text-[#45B6FE] leading-relaxed">
+            <div className="flex-1 bg-black/60 rounded-xl border border-white/5 p-4 mt-1 relative overflow-hidden group/terminal">
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#45B6FE]/30 to-transparent" />
+                <div className="hud-label !text-[9px] mb-3 !opacity-50 tracking-[0.3em] font-bold">SYSTEM // OUTPUT</div>
+                <p className="font-mono text-xs text-[#45B6FE] leading-relaxed glow-cyan brightness-110">
                     {displayedText}
-                    <span className={`inline-block w-[7px] h-[13px] bg-[#45B6FE] ml-0.5 align-middle ${cursor ? 'opacity-100' : 'opacity-0'}`} />
+                    <span className={`inline-block w-[6px] h-[12px] bg-[#45B6FE] ml-1.5 align-middle ${cursor ? 'opacity-100' : 'opacity-0'}`} />
                 </p>
             </div>
         </div>
