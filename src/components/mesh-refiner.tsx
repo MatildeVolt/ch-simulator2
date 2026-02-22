@@ -73,77 +73,128 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                 </div>
             </div>
 
-            {/* Matterhorn Rendering Area */}
-            <div className="relative flex-1 min-h-[140px] flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden">
-                <AnimatePresence mode="wait">
-                    {isDay ? (
-                        <motion.svg
-                            key="day-mesh"
-                            width="180"
-                            height="120"
-                            viewBox="0 0 100 80"
-                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 1.1, y: -10 }}
-                            className="drop-shadow-[0_0_15px_rgba(34,211,238,0.2)]"
-                        >
-                            {/* Detailed Mesh (Day) */}
-                            <path
-                                d="M10 70 L50 10 L90 70 Z"
-                                stroke="rgba(255,255,255,0.8)"
-                                strokeWidth="0.5"
-                                fill="transparent"
-                            />
-                            {/* Inner complexity lines based on density slider (visual only) */}
-                            {Array.from({ length: Math.floor(meshDensity / 10) }).map((_, i) => (
-                                <line
-                                    key={i}
-                                    x1={10 + i * 4}
-                                    y1={70}
-                                    x2={50}
-                                    y2={10 + i * 5}
-                                    stroke="rgba(34,211,238,0.3)"
-                                    strokeWidth="0.2"
+            {/* Matterhorn Rendering Area - Two Column Layout */}
+            <div className="flex flex-row gap-4 items-stretch min-h-[160px]">
+                {/* Left Column: Mountain */}
+                <div className="flex-1 flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden p-2 relative">
+                    <AnimatePresence mode="wait">
+                        {isDay ? (
+                            <motion.svg
+                                key="day-mesh"
+                                width="140"
+                                height="100"
+                                viewBox="0 0 100 80"
+                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 1.1, y: -10 }}
+                                className="drop-shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                            >
+                                {/* Detailed Mesh (Day) */}
+                                <path
+                                    d="M10 70 L50 10 L90 70 Z"
+                                    stroke="rgba(34,211,238,0.8)"
+                                    strokeWidth="0.8"
+                                    fill="transparent"
                                 />
-                            ))}
-                            <line x1="50" y1="10" x2="50" y2="70" stroke="rgba(34,211,238,0.4)" strokeWidth="0.3" />
-                            <line x1="10" y1="70" x2="90" y2="70" stroke="rgba(34,211,238,0.4)" strokeWidth="0.3" />
-                        </motion.svg>
-                    ) : (
-                        <motion.svg
-                            key="night-mesh"
-                            width="180"
-                            height="120"
-                            viewBox="0 0 100 80"
-                            initial={{ opacity: 0, scale: 1.1, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                        >
-                            {/* Minimalist Triangle (Night) */}
-                            <path
-                                d="M10 70 L50 20 L90 70 Z"
-                                stroke="rgba(255,255,255,0.3)"
-                                strokeWidth="1"
-                                fill="rgba(255,255,255,0.05)"
-                            />
-                            <line x1="50" y1="20" x2="50" y2="70" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                        </motion.svg>
-                    )}
-                </AnimatePresence>
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <line
+                                        key={i}
+                                        x1={10 + i * 16}
+                                        y1={70}
+                                        x2={50}
+                                        y2={10 + i * 12}
+                                        stroke="rgba(34,211,238,0.3)"
+                                        strokeWidth="0.3"
+                                    />
+                                ))}
+                                <line x1="50" y1="10" x2="50" y2="70" stroke="rgba(34,211,238,0.4)" strokeWidth="0.5" />
+                                <line x1="10" y1="70" x2="90" y2="70" stroke="rgba(34,211,238,0.4)" strokeWidth="0.5" />
+                            </motion.svg>
+                        ) : (
+                            <motion.svg
+                                key="night-mesh"
+                                width="140"
+                                height="100"
+                                viewBox="0 0 100 80"
+                                initial={{ opacity: 0, scale: 1.1, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                            >
+                                {/* Minimalist Triangle (Night) */}
+                                <path
+                                    d="M10 70 L50 20 L90 70 Z"
+                                    stroke="rgba(255,255,255,0.3)"
+                                    strokeWidth="1.5"
+                                    fill="rgba(255,255,255,0.05)"
+                                />
+                                <line x1="50" y1="20" x2="50" y2="70" stroke="rgba(255,255,255,0.1)" strokeWidth="0.8" />
+                            </motion.svg>
+                        )}
+                    </AnimatePresence>
 
-                {/* Warning Overlay */}
-                {((isDay && meshDensity < 80) || (!isDay && meshDensity > 20)) && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 1, 0] }}
-                        transition={{ duration: 1, repeat: Infinity }}
-                        className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center justify-center"
-                    >
-                        <span className="font-mono text-[10px] text-red-500 font-bold border border-red-500/50 px-2 py-1 bg-black/50 backdrop-blur-sm">
-                            {isDay ? "LOW_FIDELITY_DETECTED" : "EFFICIENCY_VIOLATION"}
-                        </span>
-                    </motion.div>
-                )}
+                    {/* Warning Overlay */}
+                    {((isDay && meshDensity < 80) || (!isDay && meshDensity > 20)) && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0, 1, 0] }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                            className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center justify-center"
+                        >
+                            <span className="font-mono text-[8px] text-red-500 font-bold border border-red-500/50 px-2 py-1 bg-black/50 backdrop-blur-sm">
+                                STATUS_ERR
+                            </span>
+                        </motion.div>
+                    )}
+                </div>
+
+                {/* Right Column: Celestial Body */}
+                <div className="w-32 flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                        {isDay ? (
+                            <motion.div
+                                key="sun"
+                                initial={{ opacity: 0, rotate: -45, scale: 0.5 }}
+                                animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                                exit={{ opacity: 0, rotate: 45, scale: 0.5 }}
+                                className="relative flex items-center justify-center"
+                            >
+                                <div className="absolute w-12 h-12 bg-cyan-400/20 rounded-full blur-xl animate-pulse" />
+                                <svg width="60" height="60" viewBox="0 0 24 24" className="text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
+                                    <circle cx="12" cy="12" r="5" fill="currentColor" />
+                                    {Array.from({ length: 8 }).map((_, i) => (
+                                        <line
+                                            key={i}
+                                            x1="12"
+                                            y1="1"
+                                            x2="12"
+                                            y2="4"
+                                            transform={`rotate(${i * 45} 12 12)`}
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                        />
+                                    ))}
+                                </svg>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="moon"
+                                initial={{ opacity: 0, x: 20, y: -20 }}
+                                animate={{ opacity: 1, x: 0, y: 0 }}
+                                exit={{ opacity: 0, x: -20, y: 20 }}
+                                className="relative flex items-center justify-center"
+                            >
+                                <div className="absolute w-12 h-12 bg-white/5 rounded-full blur-lg" />
+                                <svg width="60" height="60" viewBox="0 0 24 24" className="text-gray-300 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+                                    <path
+                                        d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+                                        fill="currentColor"
+                                    />
+                                </svg>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
 
             {/* Mesh Density Slider */}
