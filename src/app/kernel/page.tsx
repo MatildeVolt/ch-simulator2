@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import Navbar from "@/components/navbar";
 import CHCOW01 from "@/components/ch-cow-01";
 import MotionCard from "@/components/motion-card";
@@ -67,16 +66,15 @@ export default function KernelPage() {
                 </div>
 
                 {/* Bento Grid */}
-                {/* Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[300px]">
 
                     {/* Module 01 — CH-COW-01 Bovine Interface */}
-                    <MotionCard className="p-6 md:row-span-1 h-[300px]" delay={0.1}>
+                    <MotionCard className="p-6 md:row-span-1" delay={0.1}>
                         <CHCOW01 />
                     </MotionCard>
 
                     {/* Module 02 — Subject Demographics */}
-                    <MotionCard className="p-6 lg:col-span-2 min-h-[300px]" delay={0.2}>
+                    <MotionCard className="p-6 lg:col-span-2" delay={0.2}>
                         <div className="flex flex-col h-full">
                             <div className="flex items-start justify-between mb-8">
                                 <div>
@@ -110,7 +108,7 @@ export default function KernelPage() {
                     </MotionCard>
 
                     {/* Module 03 — Anomaly Log */}
-                    <MotionCard className="p-6 h-[300px]" delay={0.3}>
+                    <MotionCard className="p-6" delay={0.3}>
                         <div className="flex flex-col h-full">
                             <div className="flex items-start justify-between mb-6">
                                 <div>
@@ -138,33 +136,28 @@ export default function KernelPage() {
                         </div>
                     </MotionCard>
 
-                    {/* Module 04 — Temporal Sync Pillar */}
-                    <div className="flex flex-col gap-[10px] md:row-span-1">
-                        <MotionCard className="p-6 flex flex-col relative h-[450px] !overflow-visible z-50" delay={0.4}>
+                    {/* Module 04 — Temporal Sync Pillar & Instructions */}
+                    <div className="flex flex-col gap-[10px] w-full items-stretch lg:row-span-2">
+                        <MotionCard className="p-6 flex flex-col relative h-auto overflow-hidden" delay={0.4}>
                             <div className="absolute top-6 left-6 z-10 pointer-events-none">
                                 <p className="hud-label">S_SYNC // TEMPORAL</p>
                                 <h2 className="text-xl font-bold text-white tracking-tight mt-1">SBB Engine</h2>
                             </div>
 
-                            <div className="flex-1 mt-6">
+                            <div className="mt-8">
                                 <SBBEngine onRecover={handleRecover} />
                             </div>
                         </MotionCard>
 
-                        {/* Module 04-B — System Guide */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 w-full shrink-0"
-                        >
-                            <div className="font-mono text-[9px] text-cyan-400 font-bold tracking-widest mb-1.5 uppercase">
+                        {/* Instruction Card */}
+                        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-xl flex flex-col gap-2">
+                            <div className="hud-label !text-cyan-400 font-mono !text-[10px] tracking-widest opacity-100">
                                 // SYSTEM_GUIDE
                             </div>
-                            <p className="text-sm text-white/70 leading-relaxed font-sans">
-                                If the train is delayed, press and hold the <span className="font-bold text-red-600">[STOP TIME]</span> button. This pauses the clock until the train is synchronized with the schedule.
+                            <p className="font-mono text-[11px] leading-relaxed text-white/70">
+                                If the train is delayed, press and hold <span className="text-red-600 font-bold">[STOP TIME]</span> to synchronize the schedule.
                             </p>
-                        </motion.div>
+                        </div>
                     </div>
 
                     {/* Module 05 — Environmental Override */}

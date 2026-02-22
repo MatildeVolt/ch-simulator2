@@ -150,10 +150,10 @@ export default function SBBEngine({ onRecover }: SBBEngineProps) {
     };
 
     return (
-        <div className="flex flex-col h-full items-center justify-around pb-4">
+        <div className="flex flex-col items-center gap-3">
 
             {/* Clock Face container */}
-            <div className="relative w-24 h-24 sm:w-28 sm:h-28 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)] border-4 border-[#222] shrink-0 mt-2">
+            <div className="relative w-24 h-24 sm:w-28 sm:h-28 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.1)] border-4 border-[#222] shrink-0">
 
                 {/* Clock Indices */}
                 {[...Array(60)].map((_, i) => {
@@ -161,13 +161,13 @@ export default function SBBEngine({ onRecover }: SBBEngineProps) {
                     return (
                         <div
                             key={i}
-                            className="absolute left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2"
+                            className="absolute left-1/2 top-0 bottom-0 w-[1px] sm:w-[2px] -translate-x-1/2"
                             style={{ transform: `rotate(${i * 6}deg)` }}
                         >
                             <div className={cn(
                                 "mx-auto bg-black",
-                                isHour ? "w-0.5 h-2" : "w-[0.5px] h-0.5"
-                            )} style={{ marginTop: '1.5px' }} />
+                                isHour ? "w-1 h-2" : "w-0.5 h-1"
+                            )} style={{ marginTop: '1px' }} />
                         </div>
                     )
                 })}
@@ -183,7 +183,7 @@ export default function SBBEngine({ onRecover }: SBBEngineProps) {
                 {/* Minute */}
                 <div
                     ref={minuteHandRef}
-                    className="absolute left-1/2 top-[10%] w-0.5 h-[40%] bg-black origin-bottom -translate-x-1/2 rounded-full"
+                    className="absolute left-1/2 top-[10%] w-0.5 sm:w-1 h-[40%] bg-black origin-bottom -translate-x-1/2 rounded-full"
                     style={{ transformOrigin: '50% 100%' }}
                 />
 
@@ -194,8 +194,6 @@ export default function SBBEngine({ onRecover }: SBBEngineProps) {
                 >
                     {/* The iconic bulb */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-[#DC2626] rounded-full" />
-                    {/* Center Pin */}
-                    <div className="absolute top-[75%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-[#DC2626] rounded-full" />
                 </div>
 
                 {/* Center Cap */}
@@ -209,7 +207,7 @@ export default function SBBEngine({ onRecover }: SBBEngineProps) {
                 onPointerLeave={handlePointerUp}
                 onContextMenu={(e) => e.preventDefault()}
                 className={cn(
-                    "w-full py-2 bg-black/40 rounded-xl font-mono text-[10px] sm:text-xs font-black transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)] active:scale-95 select-none relative overflow-visible group shrink-0",
+                    "w-full py-2 bg-black/40 rounded-xl font-mono text-[10px] sm:text-xs font-black transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)] active:scale-95 select-none relative overflow-hidden group shrink-0",
                     delay > 0 ? "bg-[#DC2626] text-white hover:bg-[#B91C1C] drop-shadow-[0_0_10px_rgba(220,38,38,0.5)] animate-pulse hover:animate-none border-none" : "text-white/50 border border-white/10 hover:border-white/20 hover:text-white/80"
                 )}
             >
@@ -221,7 +219,7 @@ export default function SBBEngine({ onRecover }: SBBEngineProps) {
             </button>
 
             {/* Train Track Mini-Game */}
-            <div className="w-full mt-3 h-16 sm:h-18 relative border-b-2 border-dashed border-white/10 overflow-visible shrink-0">
+            <div className="w-full h-16 relative border-b-2 border-dashed border-white/10 overflow-visible shrink-0 flex items-end">
                 <motion.div
                     initial={{ left: "-30%" }}
                     animate={{ left: "120%" }}
