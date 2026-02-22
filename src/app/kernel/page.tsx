@@ -6,6 +6,7 @@ import CHCOW01 from "@/components/ch-cow-01";
 import MotionCard from "@/components/motion-card";
 import SBBEngine from "@/components/sbb-engine";
 import SwanRadar from "@/components/swan-radar";
+import MeshRefiner from "@/components/mesh-refiner";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -51,6 +52,22 @@ export default function KernelPage() {
         const newLog = {
             id: `CRIT_${Math.floor(Math.random() * 90) + 10}`,
             msg: "[CRITICAL] KERNEL_BREACH",
+            time: timeStr,
+            level: "warn" as const
+        };
+
+        setLogs(prev => [newLog, ...prev].slice(0, 10));
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 500);
+    };
+
+    const handleEnergyPenalty = (msg: string) => {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-CH', { hour: '2-digit', minute: '2-digit' });
+
+        const newLog = {
+            id: `WARN_${Math.floor(Math.random() * 90) + 10}`,
+            msg: `[WARN] ${msg}`,
             time: timeStr,
             level: "warn" as const
         };
@@ -184,39 +201,44 @@ export default function KernelPage() {
                         </div>
                     </div>
 
-                    {/* Module 05 — Environmental Override */}
-                    <MotionCard className="p-6 flex flex-col" delay={0.5}>
-                        <div className="flex flex-col h-full">
-                            <div className="flex items-start justify-between mb-6 text-right">
-                                <div className="text-left">
-                                    <p className="hud-label">S_ENV // CORE</p>
-                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Climate Control</h2>
+                    {/* Module 05 — Matterhorn Energy Pillar & Instructions */}
+                    <div className="flex flex-col gap-[10px] w-full items-stretch lg:row-span-2">
+                        <MotionCard
+                            className={cn(
+                                "p-6 flex flex-col relative h-auto overflow-hidden transition-colors duration-200",
+                                isShaking ? "border-red-600/50 shadow-[0_0_20px_rgba(220,38,38,0.3)]" : ""
+                            )}
+                            delay={0.5}
+                        >
+                            <motion.div
+                                animate={isShaking ? {
+                                    x: [-2, 2, -2, 2, 0],
+                                    y: [-1, 1, -1, 1, 0]
+                                } : {}}
+                                transition={{ duration: 0.1, repeat: 5 }}
+                                className="relative z-10 h-full"
+                            >
+                                <div className="absolute top-0 left-0 z-10 pointer-events-none">
+                                    <p className="hud-label !text-cyan-400">S_MESH // ENERGY</p>
+                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Matterhorn Refiner</h2>
                                 </div>
-                            </div>
 
-                            <div className="flex-1 grid grid-cols-2 gap-3">
-                                {[
-                                    { label: "PRECIP", value: "42%", active: true },
-                                    { label: "TEMP_EXT", value: "8.2°C", active: true },
-                                    { label: "WIND_VEC", value: "OFF", active: false },
-                                    { label: "FOG_DENS", value: "3%", active: true },
-                                ].map((ctrl) => (
-                                    <div key={ctrl.label} className={cn(
-                                        "rounded-2xl border p-4 flex flex-col justify-between transition-all group/ctrl cursor-pointer",
-                                        ctrl.active
-                                            ? "border-[#45B6FE]/10 bg-[#45B6FE]/5 hover:bg-[#45B6FE]/10 hover:border-[#45B6FE]/30"
-                                            : "border-white/5 bg-black/40 opacity-40 hover:opacity-100"
-                                    )}>
-                                        <p className="hud-label !text-[8px] tracking-[0.3em]">{ctrl.label}</p>
-                                        <p className={cn(
-                                            "font-mono text-lg font-black tracking-tight",
-                                            ctrl.active ? "text-white group-hover/ctrl:glow-cyan" : "text-white/20"
-                                        )}>{ctrl.value}</p>
-                                    </div>
-                                ))}
+                                <div className="mt-12 h-full">
+                                    <MeshRefiner onPenalty={handleEnergyPenalty} />
+                                </div>
+                            </motion.div>
+                        </MotionCard>
+
+                        {/* Instruction Card */}
+                        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-xl flex flex-col gap-2">
+                            <div className="hud-label !text-cyan-400 font-mono !text-[10px] tracking-widest opacity-100">
+                                // RESOURCE_MANAGEMENT
                             </div>
+                            <p className="font-mono text-[11px] leading-relaxed text-white/70">
+                                Adjust mesh density to match the solar cycle. High-fidelity rendering is restricted to daylight hours for energy optimization.
+                            </p>
                         </div>
-                    </MotionCard>
+                    </div>
 
                 </div>
             </div>
