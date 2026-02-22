@@ -1,9 +1,47 @@
+'use client'
+
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/navbar";
 import CHCOW01 from "@/components/ch-cow-01";
 import MotionCard from "@/components/motion-card";
+import SBBEngine from "@/components/sbb-engine";
 import { cn } from "@/lib/utils";
 
-export default async function KernelPage() {
+const INITIAL_LOGS = [
+    { id: "WARN_73", msg: "Alps mesh buffer limit", time: "14:02", level: "warn" },
+    { id: "WARN_51", msg: "HB Train clock skew", time: "11:40", level: "warn" },
+    { id: "INFO_12", msg: "Mood stabilization deployed", time: "09:15", level: "info" },
+    { id: "BOOT_01", msg: "Switzerland.exe started", time: "00:00", level: "info" },
+];
+
+export default function KernelPage() {
+    const [currentTime, setCurrentTime] = useState("");
+    const [logs, setLogs] = useState(INITIAL_LOGS);
+
+    useEffect(() => {
+        // Just for ticking the current time in the UI somewhere if needed, but not strictly required
+        const interval = setInterval(() => {
+            const now = new Date();
+            setCurrentTime(now.toLocaleTimeString('en-CH', { hour12: false }));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleRecover = () => {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-CH', { hour: '2-digit', minute: '2-digit' });
+
+        const newLog = {
+            id: `SYNC_${Math.floor(Math.random() * 90) + 10}`,
+            msg: "TRAIN SCHEDULE RECOVERED",
+            time: timeStr,
+            level: "info"
+        };
+
+        setLogs(prev => [newLog, ...prev].slice(0, 10)); // keep last 10
+    };
+
     return (
         <div className="min-h-screen pt-28 pb-20 px-6 sm:px-10">
             <div className="max-w-7xl mx-auto">
@@ -29,15 +67,16 @@ export default async function KernelPage() {
                 </div>
 
                 {/* Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[300px]">
+                {/* Bento Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                     {/* Module 01 — CH-COW-01 Bovine Interface */}
-                    <MotionCard className="p-6 md:row-span-1" delay={0.1}>
+                    <MotionCard className="p-6 md:row-span-1 h-[300px]" delay={0.1}>
                         <CHCOW01 />
                     </MotionCard>
 
                     {/* Module 02 — Subject Demographics */}
-                    <MotionCard className="p-6 lg:col-span-2" delay={0.2}>
+                    <MotionCard className="p-6 lg:col-span-2 min-h-[300px]" delay={0.2}>
                         <div className="flex flex-col h-full">
                             <div className="flex items-start justify-between mb-8">
                                 <div>
@@ -71,7 +110,7 @@ export default async function KernelPage() {
                     </MotionCard>
 
                     {/* Module 03 — Anomaly Log */}
-                    <MotionCard className="p-6" delay={0.3}>
+                    <MotionCard className="p-6 h-[300px]" delay={0.3}>
                         <div className="flex flex-col h-full">
                             <div className="flex items-start justify-between mb-6">
                                 <div>
@@ -79,17 +118,14 @@ export default async function KernelPage() {
                                     <h2 className="text-xl font-bold text-white tracking-tight mt-1 truncate">Security Feed</h2>
                                 </div>
                                 <div className="px-2 py-0.5 rounded border border-red-500/30 bg-red-500/10">
-                                    <span className="font-mono text-[9px] text-red-400 font-bold uppercase animate-pulse">2 ALERT</span>
+                                    <span className="font-mono text-[9px] text-red-400 font-bold uppercase animate-pulse">
+                                        {logs.filter(l => l.level === 'warn').length} ALERT
+                                    </span>
                                 </div>
                             </div>
 
                             <div className="flex-1 space-y-2.5 overflow-hidden">
-                                {[
-                                    { id: "WARN_73", msg: "Alps mesh buffer limit", time: "14:02", level: "warn" },
-                                    { id: "WARN_51", msg: "HB Train clock skew", time: "11:40", level: "warn" },
-                                    { id: "INFO_12", msg: "Mood stabilization deployed", time: "09:15", level: "info" },
-                                    { id: "BOOT_01", msg: "Switzerland.exe started", time: "00:00", level: "info" },
-                                ].map((log) => (
+                                {logs.map((log) => (
                                     <div key={log.id} className="flex items-center gap-3 bg-[rgba(255,255,255,0.02)] rounded-xl px-4 py-2.5 border border-white/5 hover:border-white/10 transition-colors group/log">
                                         <span className={`font-mono text-[10px] font-black tracking-tighter w-12 shrink-0 ${log.level === 'warn' ? 'text-red-500' : 'text-[#45B6FE]'}`}>
                                             {log.id}
@@ -102,31 +138,34 @@ export default async function KernelPage() {
                         </div>
                     </MotionCard>
 
-                    {/* Module 04 — Network Radar */}
-                    <MotionCard className="p-6 flex flex-col items-center justify-center relative" delay={0.4}>
-                        <div className="absolute top-6 left-6">
-                            <p className="hud-label">S_NET // UPLINK</p>
-                            <h2 className="text-xl font-bold text-white tracking-tight mt-1">Satellite</h2>
-                        </div>
-
-                        <div className="relative w-40 h-40 mt-8">
-                            <div className="absolute inset-0 rounded-full border border-white/[0.03]" />
-                            <div className="absolute inset-4 rounded-full border border-white/[0.03]" />
-                            <div className="absolute inset-8 rounded-full border border-white/[0.03]" />
-                            <div className="absolute inset-0 rounded-full border-t border-[#45B6FE]/40 animate-spin" style={{ animationDuration: '4s' }} />
-                            <div className="absolute inset-0 rounded-full border-l border-[#45B6FE]/10 animate-spin" style={{ animationDuration: '6s' }} />
-
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-center">
-                                    <p className="font-mono text-sm font-black text-white glow-cyan">SYNC</p>
-                                    <p className="font-mono text-[10px] text-white/30 uppercase mt-0.5">Established</p>
-                                </div>
+                    {/* Module 04 — Temporal Sync Pillar */}
+                    <div className="flex flex-col gap-[10px] md:row-span-1">
+                        <MotionCard className="p-6 flex flex-col relative h-[450px] !overflow-visible z-50" delay={0.4}>
+                            <div className="absolute top-6 left-6 z-10 pointer-events-none">
+                                <p className="hud-label">S_SYNC // TEMPORAL</p>
+                                <h2 className="text-xl font-bold text-white tracking-tight mt-1">SBB Engine</h2>
                             </div>
 
-                            {/* Ping point */}
-                            <div className="absolute top-1/4 right-1/4 w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping" />
-                        </div>
-                    </MotionCard>
+                            <div className="flex-1 mt-6">
+                                <SBBEngine onRecover={handleRecover} />
+                            </div>
+                        </MotionCard>
+
+                        {/* Module 04-B — System Guide */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 w-full shrink-0"
+                        >
+                            <div className="font-mono text-[9px] text-cyan-400 font-bold tracking-widest mb-1.5 uppercase">
+                                // SYSTEM_GUIDE
+                            </div>
+                            <p className="text-sm text-white/70 leading-relaxed font-sans">
+                                If the train is delayed, press and hold the <span className="font-bold text-red-600">[STOP TIME]</span> button. This pauses the clock until the train is synchronized with the schedule.
+                            </p>
+                        </motion.div>
+                    </div>
 
                     {/* Module 05 — Environmental Override */}
                     <MotionCard className="p-6 flex flex-col" delay={0.5}>
