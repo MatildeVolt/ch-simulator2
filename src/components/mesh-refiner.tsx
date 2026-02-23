@@ -68,7 +68,7 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             alt="Matterhorn"
-                            src="https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&q=80"
+                            src="/matterhorn-custom.jpg"
                             className="absolute top-0 left-0 object-cover"
                             style={{
                                 imageRendering: "pixelated",
