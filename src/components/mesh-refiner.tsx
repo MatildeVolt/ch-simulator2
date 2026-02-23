@@ -147,21 +147,7 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                         </span>
                     </div>
 
-                    <AnimatePresence>
-                        {isPenalty && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: [0, 1, 0] }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 1.2, repeat: Infinity }}
-                                className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center justify-center"
-                            >
-                                <span className="font-mono text-[9px] text-red-500 font-bold border border-red-500/50 px-2 py-0.5 bg-black/80 backdrop-blur-sm shadow-lg">
-                                    {isDay ? "HI_RES_REQUIRED" : "NIGHT_OVERCONSUMPTION"}
-                                </span>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+
 
                     {/* Cycle Grace Indicator */}
                     {isCycleGrace && (
