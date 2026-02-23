@@ -109,7 +109,7 @@ export default function KernelPage() {
                         <CHCOW01 />
                     </MotionCard>
 
-                    {/* Module 02 — Matterhorn Energy Pillar & Instructions */}
+                    {/* Module 02 — Swan Radar Pillar & Instructions */}
                     <div className="flex flex-col gap-[10px] w-full items-stretch lg:col-span-2 lg:row-span-1">
                         <MotionCard
                             className={cn(
@@ -124,15 +124,15 @@ export default function KernelPage() {
                                     y: [-1, 1, -1, 1, 0]
                                 } : {}}
                                 transition={{ duration: 0.1, repeat: 5 }}
-                                className="relative z-10 h-full"
+                                className="relative z-10"
                             >
                                 <div className="absolute top-0 left-0 z-10 pointer-events-none">
-                                    <p className="hud-label !text-cyan-400">S_MESH // ENERGY</p>
-                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Matterhorn Refiner</h2>
+                                    <p className="hud-label !text-cyan-400">S_RADAR // PERIMETER</p>
+                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Swan Radar</h2>
                                 </div>
 
-                                <div className="mt-12 h-full">
-                                    <MeshRefiner onPenalty={handleEnergyPenalty} />
+                                <div className="mt-12">
+                                    <SwanRadar onBreach={handleBreach} />
                                 </div>
                             </motion.div>
                         </MotionCard>
@@ -140,10 +140,10 @@ export default function KernelPage() {
                         {/* Instruction Card */}
                         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-xl flex flex-col gap-2">
                             <div className="hud-label !text-cyan-400 font-mono !text-[10px] tracking-widest opacity-100">
-                                // RESOURCE_MANAGEMENT
+                                // SYSTEM_GUIDE
                             </div>
                             <p className="font-mono text-[11px] leading-relaxed text-white/70">
-                                Adjust mesh density to match the solar cycle. High-fidelity rendering is restricted to daylight hours for energy optimization.
+                                Swan signatures detected approaching the data center core. Click to neutralize each signature. Central breaches will result in kernel interface instability.
                             </p>
                         </div>
                     </div>
@@ -201,7 +201,7 @@ export default function KernelPage() {
                         </div>
                     </div>
 
-                    {/* Module 05 — Swan Radar Pillar & Instructions */}
+                    {/* Module 05 — Matterhorn Energy Pillar & Instructions */}
                     <div className="flex flex-col gap-[10px] w-full items-stretch lg:row-span-2">
                         <MotionCard
                             className={cn(
@@ -216,15 +216,15 @@ export default function KernelPage() {
                                     y: [-1, 1, -1, 1, 0]
                                 } : {}}
                                 transition={{ duration: 0.1, repeat: 5 }}
-                                className="relative z-10"
+                                className="relative z-10 h-full"
                             >
                                 <div className="absolute top-0 left-0 z-10 pointer-events-none">
-                                    <p className="hud-label !text-cyan-400">S_RADAR // PERIMETER</p>
-                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Swan Radar</h2>
+                                    <p className="hud-label !text-cyan-400">S_MESH // ENERGY</p>
+                                    <h2 className="text-xl font-bold text-white tracking-tight mt-1">Matterhorn Refiner</h2>
                                 </div>
 
-                                <div className="mt-12">
-                                    <SwanRadar onBreach={handleBreach} />
+                                <div className="mt-12 h-full">
+                                    <MeshRefiner onPenalty={handleEnergyPenalty} />
                                 </div>
                             </motion.div>
                         </MotionCard>
@@ -232,10 +232,10 @@ export default function KernelPage() {
                         {/* Instruction Card */}
                         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-xl flex flex-col gap-2">
                             <div className="hud-label !text-cyan-400 font-mono !text-[10px] tracking-widest opacity-100">
-                                // SYSTEM_GUIDE
+                                // RESOURCE_MANAGEMENT
                             </div>
                             <p className="font-mono text-[11px] leading-relaxed text-white/70">
-                                Swan signatures detected approaching the data center core. Click to neutralize each signature. Central breaches will result in kernel interface instability.
+                                Adjust mesh density to match the solar cycle. High-fidelity rendering is restricted to daylight hours for energy optimization.
                             </p>
                         </div>
                     </div>
