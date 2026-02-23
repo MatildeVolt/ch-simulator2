@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import Footer from "@/components/footer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,14 +25,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased selection:bg-[#45B6FE]/30 selection:text-white`}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased selection:bg-[#45B6FE]/30 selection:text-white min-h-screen flex flex-col`}>
         {/* Global HUD Layout Backgrounds */}
         <div className="hud-grid-overlay" />
-        <div className="mountain-wireframe" />
 
-        <div className="relative z-10">
+        <div className="relative z-10 flex-grow flex flex-col mb-[10px]">
           {children}
         </div>
+
+        <Footer />
       </body>
     </html>
   );

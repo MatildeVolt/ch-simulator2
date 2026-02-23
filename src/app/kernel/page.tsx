@@ -7,9 +7,9 @@ import MotionCard from "@/components/motion-card";
 import SBBEngine from "@/components/sbb-engine";
 import SwanRadar from "@/components/swan-radar";
 import MeshRefiner from "@/components/mesh-refiner";
-import CowAdvisory from "@/components/cow-advisory";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { createClient } from "@/utils/supabase/client";
 
 const INITIAL_LOGS = [
     { id: "WARN_73", msg: "Alps mesh buffer limit", time: "14:02", level: "warn" },
@@ -22,6 +22,7 @@ export default function KernelPage() {
     const [currentTime, setCurrentTime] = useState("");
     const [logs, setLogs] = useState(INITIAL_LOGS);
     const [isShaking, setIsShaking] = useState(false);
+    const [userLabel, setUserLabel] = useState("GUEST_ACCESS");
 
     // Advisory States
     const [isDay, setIsDay] = useState(true);
@@ -30,6 +31,22 @@ export default function KernelPage() {
     const [isSbbOptimized, setIsSbbOptimized] = useState(true);
 
     useEffect(() => {
+        const fetchUser = async () => {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: subjectData } = await supabase
+                    .from("subjects")
+                    .select("role")
+                    .eq("id", user.id)
+                    .single();
+
+                const role = subjectData?.role?.toUpperCase() || "SUBJECT";
+                setUserLabel(`${user.email?.toUpperCase()} // ACCESS_LEVEL: ${role}`);
+            }
+        };
+        fetchUser();
+
         // Just for ticking the current time in the UI somewhere if needed, but not strictly required
         const interval = setInterval(() => {
             const now = new Date();
@@ -96,7 +113,7 @@ export default function KernelPage() {
                 <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                     <div className="space-y-1">
                         <p className="hud-label ml-0.5 !text-[#45B6FE] !opacity-100 animate-pulse">
-              // AUTH_TOKEN_VALIDATED: KERNEL_LEVEL_01
+                            // AUTH_TOKEN_VALIDATED: {userLabel}
                         </p>
                         <h1 className="text-5xl font-bold tracking-tighter text-white drop-shadow-sm">
                             Kernel <span className="text-[#45B6FE] font-mono text-xl align-top ml-2 brightness-125">v1.2</span>
@@ -113,7 +130,7 @@ export default function KernelPage() {
                 </div>
 
                 {/* Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[300px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[10px] auto-rows-[300px]">
 
                     {/* Module 01 — CH-COW-01 Bovine Interface */}
                     <MotionCard className="p-6 md:row-span-1" delay={0.1}>

@@ -42,8 +42,14 @@ export default function ManifestoPage() {
                     </p>
                 </section>
 
-                <div className="mt-12 pt-6 border-t border-white/10 text-center">
-                    <p className="text-[10px] tracking-widest text-white/30 uppercase">End of File // CH-SIMULATOR v1.0.0</p>
+                <div className="mt-12 pt-6 border-t border-white/10 text-left">
+                    <p className="text-[10px] tracking-widest text-white/30 uppercase font-mono mb-[10px]">End of File // CH-SIMULATOR v1.0.0</p>
+
+                    <div className="font-mono text-[#45B6FE] text-[10px] sm:text-xs tracking-widest uppercase flex flex-col gap-2">
+                        <p>// CONTACT_CH_PROTOCOL</p>
+                        <p>- EMAIL: ops@ch-simulation.core</p>
+                        <p>- ENCRYPTED_WEB: protocol.ch</p>
+                    </div>
                 </div>
             </div>
         </div>
