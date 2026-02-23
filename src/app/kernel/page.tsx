@@ -117,7 +117,12 @@ export default function KernelPage() {
 
                     {/* Module 01 — CH-COW-01 Bovine Interface */}
                     <MotionCard className="p-6 md:row-span-1" delay={0.1}>
-                        <CHCOW01 />
+                        <CHCOW01
+                            isDay={isDay}
+                            meshDensity={meshDensity}
+                            isRadarBreach={isRadarBreach}
+                            isSbbOptimized={isSbbOptimized}
+                        />
                     </MotionCard>
 
                     {/* Module 02 — Swan Radar Pillar & Instructions */}
@@ -258,19 +263,11 @@ export default function KernelPage() {
                                 Adjust mesh density to match the solar cycle. High-fidelity rendering is restricted to daylight hours for energy optimization.
                             </p>
                         </div>
-
-                        {/* Module 04 Pillar Intelligence (Smart Advisory Core) */}
-                        <CowAdvisory
-                            isDay={isDay}
-                            meshDensity={meshDensity}
-                            isRadarBreach={isRadarBreach}
-                            isSbbOptimized={isSbbOptimized}
-                        />
                     </div>
 
                 </div>
             </div>
             <Navbar />
-        </div>
+        </div >
     );
 }

@@ -1,24 +1,23 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
-const STATUS_MESSAGES = [
-    "KERNEL LOAD: 99.7% — All sectors nominal.",
-    "SUBJECT COUNT: 8,720,421 — Deviation within tolerance.",
-    "WEATHER SYNC: Initializing precipitation override for Berne.",
-    "CULTURAL MATRIX: Fondue module v4.2 — STABLE.",
-    "EXPORT SURPLUS: CHF 49.2B — Timeline consistent.",
-    "BORDER RENDER: Mountain pass textures reloading...",
-    "DEMOCRACY SCRIPT: Running. 99.1% acceptance rate.",
-    "TRAIN DELAY: Anomaly detected. Dispatching patch 0.003ms.",
-    "BANKING MODULE: Offshore encryption layer — ONLINE.",
-    "CLOCK SYNC: ±0.001ms. Subjects remain unaware.",
-    "ALPS RENDERING: LOD level 4 active. No subjects near debug zone.",
-    "POPULATION MOOD: NEUTRAL. Chocolate distribution nominal.",
-    "LANGUAGE MATRIX: 4 protocols active. Divergence: 0%.",
-    "NEUTRALITY CORE: Stable. All military override — DORMANT.",
-    "SIMULATION INTEGRITY: 99.9998% — Variance acceptable.",
+interface CHCOW01Props {
+    isDay: boolean;
+    meshDensity: number;
+    isRadarBreach: boolean;
+    isSbbOptimized: boolean;
+}
+
+const SWISS_REMARKS = [
+    "// M4_LOG: Thermal levels stable. Cooler than the water in Lake Zurich.",
+    "// ADVICE: Remember, a true Swiss engineer never settles for low-poly during the day.",
+    "// M4_LOG: Precision is not an option, it's a demographic requirement.",
+    "// ADVICE: Chocolate consumption levels are low. Calibration might be affected.",
+    "// M4_LOG: Atmospheric pressure is slightly higher than a fondue pot.",
+    "// ADVICE: Keep the SBB clock ticking. Time is our only currency."
 ];
 
 const DetailedCow = ({ isGlitching }: { isGlitching: boolean }) => {
@@ -44,28 +43,70 @@ const DetailedCow = ({ isGlitching }: { isGlitching: boolean }) => {
     );
 };
 
-export default function CHCOW01() {
-    const [currentMessage, setCurrentMessage] = useState(STATUS_MESSAGES[0]);
+export default function CHCOW01({ isDay, meshDensity, isRadarBreach, isSbbOptimized }: CHCOW01Props) {
+    const [currentMessage, setCurrentMessage] = useState("// INITIALIZING_HEURISTICS... [OK]");
     const [displayedText, setDisplayedText] = useState("");
     const [isTyping, setIsTyping] = useState(true);
     const [cursor, setCursor] = useState(true);
     const [isGlitching, setIsGlitching] = useState(false);
 
+    const lastRemarkTime = useRef(Date.now());
+    const prevConditionsRef = useRef({ isDay, meshDensity, isRadarBreach, isSbbOptimized });
+
+    // ── Cursor Blink ────────────────────────────────────────────────────────
     useEffect(() => {
         const interval = setInterval(() => setCursor(c => !c), 500);
         return () => clearInterval(interval);
     }, []);
 
+    // ── Priority Logic ──────────────────────────────────────────────────────
     useEffect(() => {
-        const interval = setInterval(() => {
-            const next = STATUS_MESSAGES[Math.floor(Math.random() * STATUS_MESSAGES.length)];
-            setCurrentMessage(next);
+        let nextMsg = "";
+        const isCurrentlyOptimized = isDay ? (meshDensity >= 70 && isSbbOptimized && !isRadarBreach) : (meshDensity <= 30 && isSbbOptimized && !isRadarBreach);
+        const wasOptimized = prevConditionsRef.current.isDay ? (prevConditionsRef.current.meshDensity >= 70 && prevConditionsRef.current.isSbbOptimized && !prevConditionsRef.current.isRadarBreach) : (prevConditionsRef.current.meshDensity <= 30 && prevConditionsRef.current.isSbbOptimized && !prevConditionsRef.current.isRadarBreach);
+
+        // Priority 1: ENERGY ERROR
+        if (!isDay && meshDensity > 40) {
+            nextMsg = "// URGENT: Night mode active. Decrease mesh density to save Swiss energy!";
+        }
+        // Priority 2: RADAR SECURITY
+        else if (isRadarBreach) {
+            nextMsg = "// SECURITY: Swan signatures detected in the inner circle! Neutralize now!";
+        }
+        // Priority 3: SUCCESS
+        else if (isCurrentlyOptimized && !wasOptimized) {
+            nextMsg = "// STATUS: Calibration successful. You're as precise as a Swiss watchmaker.";
+        }
+
+        if (nextMsg && nextMsg !== currentMessage) {
+            setCurrentMessage(nextMsg);
             setDisplayedText("");
             setIsTyping(true);
-        }, 5000); // Changed to 5000ms as requested
-        return () => clearInterval(interval);
-    }, []);
+            lastRemarkTime.current = Date.now();
+        }
 
+        prevConditionsRef.current = { isDay, meshDensity, isRadarBreach, isSbbOptimized };
+    }, [isDay, meshDensity, isRadarBreach, isSbbOptimized, currentMessage]);
+
+    // ── Random Witty Remarks ────────────────────────────────────────────────
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = Date.now();
+            const isOptimized = isDay ? (meshDensity >= 70 && isSbbOptimized && !isRadarBreach) : (meshDensity <= 30 && isSbbOptimized && !isRadarBreach);
+
+            if (now - lastRemarkTime.current > 30000 && isOptimized) {
+                const randomIdx = Math.floor(Math.random() * SWISS_REMARKS.length);
+                setCurrentMessage(SWISS_REMARKS[randomIdx]);
+                setDisplayedText("");
+                setIsTyping(true);
+                lastRemarkTime.current = now;
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isDay, meshDensity, isRadarBreach, isSbbOptimized]);
+
+    // ── Typing Animation ────────────────────────────────────────────────────
     useEffect(() => {
         if (!isTyping) return;
         let i = 0;
@@ -81,6 +122,7 @@ export default function CHCOW01() {
         return () => clearInterval(interval);
     }, [currentMessage, isTyping]);
 
+    // ── Glitch UI ───────────────────────────────────────────────────────────
     useEffect(() => {
         const glitchInterval = setInterval(() => {
             setIsGlitching(true);
@@ -89,53 +131,59 @@ export default function CHCOW01() {
         return () => clearInterval(glitchInterval);
     }, []);
 
+    const isAlarm = currentMessage.includes("URGENT") || currentMessage.includes("SECURITY");
+
     return (
         <div className="flex flex-col gap-4 h-full overflow-hidden">
             {/* Swiss Red Badge */}
             <div className="flex items-center justify-between z-10 relative">
-                <span className="neon-badge !text-[#FF0028] !border-[#FF0028]/20 bg-[#FF0028]/5">
-                    <span className="w-1 h-1 rounded-full bg-[#FF0028] shadow-[0_0_8px_rgba(255,0,40,0.8)] animate-pulse" />
+                <span className={cn(
+                    "neon-badge transition-colors duration-500",
+                    isAlarm ? "!text-red-500 !border-red-500/40 bg-red-500/10" : "!text-[#FF0028] !border-[#FF0028]/20 bg-[#FF0028]/5"
+                )}>
+                    <span className={cn(
+                        "w-1 h-1 rounded-full animate-pulse",
+                        isAlarm ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" : "bg-[#FF0028] shadow-[0_0_8px_rgba(255,0,40,0.8)]"
+                    )} />
                     CH-COW-01
                 </span>
-                <span className="hud-label !text-white/40">BOVINE INTERFACE</span>
+                <span className="hud-label !text-white/40 uppercase tracking-widest">
+                    {isAlarm ? "CRITICAL_ADVISORY" : "BOVINE INTERFACE"}
+                </span>
             </div>
 
             <div className="flex-1 flex flex-col sm:flex-row items-center justify-center relative z-0 gap-6 px-4">
-                {/* ASCII Cow with Framer Motion floating and Glitch */}
+                {/* ASCII Cow */}
                 <motion.div
                     animate={{ y: [0, -8, 0] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                     className="shrink-0"
                 >
-                    <DetailedCow isGlitching={isGlitching} />
+                    <DetailedCow isGlitching={isGlitching || isAlarm} />
                 </motion.div>
 
                 {/* Speech Bubble */}
-                <div className="relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 max-w-sm w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:border-[10px] before:border-transparent before:border-r-white/20 before:border-b-white/20 sm:before:top-1/2 sm:before:-translate-y-1/2 sm:before:-left-[20px] before:bottom-full before:left-1/2 before:-translate-x-1/2 sm:before:bottom-auto sm:before:translate-x-0 hidden sm:block">
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#45B6FE]/50 to-transparent rounded-t-2xl" />
-                    <p className="font-mono text-sm text-cyan-400 leading-relaxed drop-shadow-[0_0_5px_rgba(69,182,254,0.5)]">
+                <div className={cn(
+                    "relative bg-white/10 backdrop-blur-md rounded-2xl border p-4 max-w-sm w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-colors duration-500",
+                    "before:content-[''] before:absolute before:border-[10px] before:border-transparent sm:before:top-1/2 sm:before:-translate-y-1/2 before:bottom-full before:left-1/2 before:-translate-x-1/2 sm:before:bottom-auto sm:before:translate-x-0",
+                    isAlarm ? "border-red-500/50 before:border-r-red-500/50 before:border-b-red-500/50 sm:before:border-r-red-500/50 sm:before:border-b-transparent" : "border-white/20 before:border-r-white/20 before:border-b-white/20 sm:before:border-r-white/20 sm:before:border-b-transparent"
+                )}>
+                    <div className={cn(
+                        "absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent rounded-t-2xl",
+                        isAlarm && "via-red-500/50"
+                    )} />
+                    <p className={cn(
+                        "font-mono text-sm leading-relaxed transition-colors duration-500",
+                        isAlarm ? "text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]" : "text-cyan-400 drop-shadow-[0_0_5px_rgba(69,182,254,0.5)]"
+                    )}>
                         {displayedText}
-                        <span className={`inline-block w-[6px] h-[14px] bg-cyan-400 ml-1.5 align-middle ${cursor ? 'opacity-100' : 'opacity-0'}`} />
+                        <span className={cn(
+                            "inline-block w-[6px] h-[14px] ml-1.5 align-middle transition-opacity",
+                            cursor ? 'opacity-100' : 'opacity-0',
+                            isAlarm ? "bg-red-500" : "bg-cyan-400"
+                        )} />
                     </p>
                 </div>
-                {/* Mobile Speech Bubble (tail points up) */}
-                <div className="relative bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 max-w-sm w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:border-[10px] before:border-transparent before:border-b-white/20 before:bottom-full before:left-1/2 before:-translate-x-1/2 sm:hidden mt-2">
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#45B6FE]/50 to-transparent rounded-t-2xl" />
-                    <p className="font-mono text-sm text-cyan-400 leading-relaxed drop-shadow-[0_0_5px_rgba(69,182,254,0.5)]">
-                        {displayedText}
-                        <span className={`inline-block w-[6px] h-[14px] bg-cyan-400 ml-1.5 align-middle ${cursor ? 'opacity-100' : 'opacity-0'}`} />
-                    </p>
-                </div>
-            </div>
-
-            {/* Terminal Output */}
-            <div className="bg-black/80 backdrop-blur-md rounded-xl border border-white/10 p-4 relative group/terminal z-10 mt-auto hidden">
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#45B6FE]/50 to-transparent" />
-                <div className="hud-label !text-[9px] mb-3 !opacity-50 tracking-[0.3em] font-bold">SYSTEM // OUTPUT</div>
-                <p className="font-mono text-xs text-[#45B6FE] leading-relaxed glow-cyan brightness-110 min-h-[36px]">
-                    {displayedText}
-                    <span className={`inline-block w-[6px] h-[12px] bg-[#45B6FE] ml-1.5 align-middle ${cursor ? 'opacity-100' : 'opacity-0'}`} />
-                </p>
             </div>
         </div>
     );
