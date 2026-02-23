@@ -1,17 +1,29 @@
+'use client';
+
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/client";
+import { useEffect, useState } from "react";
 
-export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
-export const revalidate = 0;
+export default function NewsPage() {
+    const [news, setNews] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-export default async function NewsPage() {
-    const supabase = await createClient();
+    useEffect(() => {
+        const fetchNews = async () => {
+            const supabase = createClient();
+            const { data } = await supabase
+                .from("news")
+                .select("*")
+                .order("created_at", { ascending: false });
 
-    const { data: news } = await supabase
-        .from("news")
-        .select("*")
-        .order("created_at", { ascending: false });
+            if (data) {
+                setNews(data);
+            }
+            setIsLoading(false);
+        };
+
+        fetchNews();
+    }, []);
 
     return (
         <div className="min-h-screen p-8 max-w-4xl mx-auto flex flex-col">
@@ -33,7 +45,11 @@ export default async function NewsPage() {
             </div>
 
             <div className="flex flex-col gap-[10px]">
-                {!news || news.length === 0 ? (
+                {isLoading ? (
+                    <div className="text-center text-[#45B6FE] text-sm tracking-widest uppercase p-8 border border-[#45B6FE]/20 border-dashed animate-pulse">
+                        CONNECTING TO CORE ARCHIVE...
+                    </div>
+                ) : !news || news.length === 0 ? (
                     <div className="text-center text-white/30 text-sm tracking-widest uppercase p-8 border border-white/5 border-dashed">
                         No Anomalies Recorded.
                     </div>
