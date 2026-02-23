@@ -14,10 +14,8 @@ interface MeshRefinerProps {
 // image-rendering: pixelated — no libraries needed.
 // n: 1 = crisp (100% density), 20 = very pixelated (0% density)
 function getPixelScale(density: number): number {
-    if (density >= 100) return 1;
-    // density 0 → n=80 (huge blocks), density 100 → n=1 (crisp)
-    // Higher number = more pixelation. 80x is very aggressive.
-    return 1 + Math.floor(((100 - density) / 100) * 80);
+    // density 0 → n=20 (big blocks), density 100 → n=1 (crisp)
+    return Math.max(1, Math.round(20 - (density / 100) * 19));
 }
 
 export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
@@ -60,60 +58,56 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
             <div className="grid grid-cols-[2fr_1fr] gap-3 items-stretch">
 
                 {/* Left: Pixelating Matterhorn image */}
-                <div className="relative rounded-xl border border-white/5 overflow-hidden bg-black min-h-[130px] flex items-center justify-center">
-
-                    {/* ── Pixelation Engine ─────────────────────────────────── */}
-                    {/* The image is physically constrained to a tiny percentage of the area, then scaled up */}
-                    <div className="absolute inset-0 overflow-hidden">
-                        <div
-                            className="w-full h-full transform-gpu"
-                            style={{
-                                width: `${100 / pixelN}%`,
-                                height: `${100 / pixelN}%`,
-                                transform: `scale(${pixelN})`,
-                                transformOrigin: "top left",
-                                imageRendering: "pixelated",
-                            }}
-                        >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                alt="Matterhorn"
-                                src="/matterhorn-custom.jpg"
-                                className="w-full h-full object-cover"
-                                style={{
-                                    imageRendering: "pixelated",
-                                }}
-                            />
-                        </div>
+                <div className="relative rounded-xl border border-white/5 overflow-hidden bg-black min-h-[130px]">
+                    {/* 
+                        REAL CSS PIXELATION: 
+                        1. Container scaled DOWN (resolution reduction)
+                        2. Image inside fills it
+                        3. Container scaled UP with pixelated rendering
+                    */}
+                    <div
+                        className="absolute inset-0 overflow-hidden"
+                        style={{
+                            width: `${100 / pixelN}%`,
+                            height: `${100 / pixelN}%`,
+                            transform: `scale(${pixelN})`,
+                            transformOrigin: "top left",
+                            imageRendering: "pixelated",
+                        }}
+                    >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            alt="Matterhorn"
+                            src="/matterhorn-custom.jpg"
+                            className="absolute inset-0 w-full h-full object-cover"
+                            style={{ imageRendering: "pixelated" }}
+                        />
                     </div>
 
-                    {/* Dark overlay gradient – day lighter, night darker (NO RED TINT) */}
-                    <div className={cn(
-                        "absolute inset-0 pointer-events-none transition-colors duration-700",
-                        isDay ? "bg-gradient-to-t from-black/40 via-transparent"
-                            : "bg-gradient-to-t from-black/70 via-black/20"
-                    )} />
+                    {/* Gradient Overlay for bottom text legibility - Neutral Gray/Black */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
 
                     {/* Fidelity badge bottom-left */}
-                    <div className="absolute bottom-2 left-2 z-20">
-                        <span className={cn("font-mono text-[8px] font-bold px-1.5 py-0.5 rounded border shadow-lg", fidelityClass)}>
+                    <div className="absolute bottom-2 left-2">
+                        <span className={cn(
+                            "font-mono text-[8px] font-bold px-1.5 py-0.5 rounded border backdrop-blur-md",
+                            fidelityClass
+                        )}>
                             {fidelityLabel} // {meshDensity}%
                         </span>
                     </div>
 
-                    {/* Warning text (Floating, no full-screen tint) */}
+                    {/* Warning flash overlay - only triggered on penalty */}
                     <AnimatePresence>
                         {isPenalty && (
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                className="absolute inset-0 z-30 pointer-events-none flex items-center justify-center"
-                            >
-                                <div className="font-mono text-[10px] text-red-500 font-bold border border-red-500/50 px-3 py-1.5 bg-black/80 backdrop-blur-md shadow-[0_0_20px_rgba(239,68,68,0.2)]">
-                                    {isDay ? "LOW_FIDELITY_DETECTED" : "EFFICIENCY_VIOLATION"}
-                                </div>
-                            </motion.div>
+                                key="penalty-flash"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: [0, 0.4, 0] }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                                className="absolute inset-0 bg-red-600/20 border-2 border-red-500/50 pointer-events-none z-20"
+                            />
                         )}
                     </AnimatePresence>
                 </div>
