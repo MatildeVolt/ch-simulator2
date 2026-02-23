@@ -49,9 +49,11 @@ export default function CHCOW01({ isDay, meshDensity, isRadarBreach, isSbbOptimi
     const [isTyping, setIsTyping] = useState(true);
     const [cursor, setCursor] = useState(true);
     const [isGlitching, setIsGlitching] = useState(false);
+    const [holdActive, setHoldActive] = useState(false);
 
     const lastRemarkTime = useRef(Date.now());
     const prevConditionsRef = useRef({ isDay, meshDensity, isRadarBreach, isSbbOptimized });
+    const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // ── Cursor Blink ────────────────────────────────────────────────────────
     useEffect(() => {
@@ -61,6 +63,9 @@ export default function CHCOW01({ isDay, meshDensity, isRadarBreach, isSbbOptimi
 
     // ── Priority Logic ──────────────────────────────────────────────────────
     useEffect(() => {
+        // If typing or message is holding for 3s, don't re-evaluate yet
+        if (isTyping || holdActive) return;
+
         let nextMsg = "";
         const isCurrentlyOptimized = isDay ? (meshDensity >= 70 && isSbbOptimized && !isRadarBreach) : (meshDensity <= 30 && isSbbOptimized && !isRadarBreach);
         const wasOptimized = prevConditionsRef.current.isDay ? (prevConditionsRef.current.meshDensity >= 70 && prevConditionsRef.current.isSbbOptimized && !prevConditionsRef.current.isRadarBreach) : (prevConditionsRef.current.meshDensity <= 30 && prevConditionsRef.current.isSbbOptimized && !prevConditionsRef.current.isRadarBreach);
@@ -86,12 +91,14 @@ export default function CHCOW01({ isDay, meshDensity, isRadarBreach, isSbbOptimi
         }
 
         prevConditionsRef.current = { isDay, meshDensity, isRadarBreach, isSbbOptimized };
-    }, [isDay, meshDensity, isRadarBreach, isSbbOptimized, currentMessage]);
+    }, [isDay, meshDensity, isRadarBreach, isSbbOptimized, currentMessage, isTyping, holdActive]);
 
     // ── Random Witty Remarks ────────────────────────────────────────────────
     useEffect(() => {
         const interval = setInterval(() => {
             const now = Date.now();
+            if (isTyping || holdActive) return;
+
             const isOptimized = isDay ? (meshDensity >= 70 && isSbbOptimized && !isRadarBreach) : (meshDensity <= 30 && isSbbOptimized && !isRadarBreach);
 
             if (now - lastRemarkTime.current > 30000 && isOptimized) {
@@ -104,9 +111,9 @@ export default function CHCOW01({ isDay, meshDensity, isRadarBreach, isSbbOptimi
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [isDay, meshDensity, isRadarBreach, isSbbOptimized]);
+    }, [isDay, meshDensity, isRadarBreach, isSbbOptimized, isTyping, holdActive]);
 
-    // ── Typing Animation ────────────────────────────────────────────────────
+    // ── Typing Animation & Post-Typing Hold ─────────────────────────────────
     useEffect(() => {
         if (!isTyping) return;
         let i = 0;
@@ -116,10 +123,21 @@ export default function CHCOW01({ isDay, meshDensity, isRadarBreach, isSbbOptimi
                 i++;
             } else {
                 setIsTyping(false);
+                setHoldActive(true);
                 clearInterval(interval);
+
+                // Clear any existing timeout
+                if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
+
+                // Start the 3-second hold
+                holdTimeoutRef.current = setTimeout(() => {
+                    setHoldActive(false);
+                }, 3000);
             }
         }, 25);
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+        };
     }, [currentMessage, isTyping]);
 
     // ── Glitch UI ───────────────────────────────────────────────────────────
@@ -162,11 +180,10 @@ export default function CHCOW01({ isDay, meshDensity, isRadarBreach, isSbbOptimi
                     <DetailedCow isGlitching={isGlitching || isAlarm} />
                 </motion.div>
 
-                {/* Speech Bubble */}
+                {/* Speech Bubble (Refined: No Triangle tail, persistence logic) */}
                 <div className={cn(
                     "relative bg-white/10 backdrop-blur-md rounded-2xl border p-4 max-w-sm w-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-colors duration-500",
-                    "before:content-[''] before:absolute before:border-[10px] before:border-transparent sm:before:top-1/2 sm:before:-translate-y-1/2 before:bottom-full before:left-1/2 before:-translate-x-1/2 sm:before:bottom-auto sm:before:translate-x-0",
-                    isAlarm ? "border-red-500/50 before:border-r-red-500/50 before:border-b-red-500/50 sm:before:border-r-red-500/50 sm:before:border-b-transparent" : "border-white/20 before:border-r-white/20 before:border-b-white/20 sm:before:border-r-white/20 sm:before:border-b-transparent"
+                    isAlarm ? "border-red-500/50" : "border-white/20"
                 )}>
                     <div className={cn(
                         "absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent rounded-t-2xl",
