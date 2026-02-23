@@ -19,8 +19,10 @@ const SWISS_REMARKS = [
     "// ADVICE: Keep the SBB clock ticking. Time is our only currency."
 ];
 
+const INITIAL_INSTRUCTION = "Adjust mesh density to match the solar cycle. High-fidelity rendering is restricted to daylight hours for energy optimization.";
+
 export default function CowAdvisory({ isDay, meshDensity, isRadarBreach, isSbbOptimized }: CowAdvisoryProps) {
-    const [message, setMessage] = useState("// INITIALIZING_HEURISTICS... [OK]");
+    const [message, setMessage] = useState(`// ADVISORY: ${INITIAL_INSTRUCTION}`);
     const [displayedText, setDisplayedText] = useState("");
     const [isTyping, setIsTyping] = useState(false);
 
@@ -42,7 +44,7 @@ export default function CowAdvisory({ isDay, meshDensity, isRadarBreach, isSbbOp
         else if (isRadarBreach) {
             nextMsg = "// SECURITY: Swan signatures detected in the inner circle! Neutralize now!";
         }
-        // Priority 3: SUCCESS (STATUS) - Triggered when moving from any error/unoptimized state to fully optimized
+        // Priority 3: SUCCESS (STATUS)
         else if (isCurrentlyOptimized && !wasOptimized) {
             nextMsg = "// STATUS: Calibration successful. You're as precise as a Swiss watchmaker.";
         }
@@ -89,7 +91,7 @@ export default function CowAdvisory({ isDay, meshDensity, isRadarBreach, isSbbOp
                 if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
                 setIsTyping(false);
             }
-        }, 20); // Fast but visible typing stroke
+        }, 20);
 
         return () => {
             if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
@@ -97,32 +99,35 @@ export default function CowAdvisory({ isDay, meshDensity, isRadarBreach, isSbbOp
     }, [message]);
 
     return (
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-xl flex items-start gap-4 transition-all duration-300 min-h-[70px]">
-            {/* Minimalist Cyan Cow Icon (HUD Style) */}
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-cyan-400 drop-shadow-glow">
-                    <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2Z" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
-                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-                    <circle cx="9" cy="11" r="1" fill="currentColor" />
-                    <circle cx="15" cy="11" r="1" fill="currentColor" />
-                    <path d="M8 15.5C8 15.5 10 17.5 12 17.5C14 17.5 16 15.5 16 15.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                    <path d="M5 9L7 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <path d="M19 9L17 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-xl flex flex-col gap-2 transition-all duration-300 min-h-[85px]">
+            <div className="flex items-center justify-between">
+                <div className="hud-label !text-cyan-400 font-mono !text-[10px] tracking-widest opacity-100 uppercase font-bold flex items-center gap-1.5">
+                    <span className={cn(
+                        "w-1.5 h-1.5 rounded-full animate-pulse",
+                        message.includes("URGENT") || message.includes("SECURITY") ? "bg-red-500" : "bg-cyan-400"
+                    )} />
+                    {message.includes("URGENT") || message.includes("SECURITY") ? "// ALERT_CORE" : "// RESOURCE_MANAGEMENT"}
+                </div>
+
+                {/* Minimalist Cow Indication */}
+                <div className="text-[10px] font-mono text-white/30 flex items-center gap-1">
+                    CH-COW-01.AI <span className="text-cyan-400/50">●</span>
+                </div>
             </div>
 
-            {/* Message Display Area */}
-            <div className="flex flex-col gap-1 overflow-hidden">
-                <div className="flex items-center gap-2">
-                    <span className="hud-label !text-cyan-400 font-mono !text-[10px] tracking-widest opacity-100 flex items-center gap-1.5 uppercase font-bold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                        ADVISORY_CORE // CH-COW-01.AI
-                    </span>
-                </div>
-                <div className="font-mono text-[11px] leading-relaxed text-white/90 min-h-[32px]">
-                    <span className="whitespace-pre-wrap">{displayedText}</span>
-                    {isTyping && <span className="inline-block w-1.5 h-3 bg-cyan-400 animate-pulse ml-0.5 align-middle" />}
-                </div>
+            <div className="font-mono text-[11px] leading-relaxed min-h-[32px] transition-colors duration-500">
+                <span className={cn(
+                    "whitespace-pre-wrap",
+                    message.includes("URGENT") || message.includes("SECURITY") ? "text-red-400" : "text-white/70"
+                )}>
+                    {displayedText}
+                </span>
+                {isTyping && (
+                    <span className={cn(
+                        "inline-block w-1.5 h-3 animate-pulse ml-0.5 align-middle",
+                        message.includes("URGENT") || message.includes("SECURITY") ? "bg-red-500" : "bg-cyan-400"
+                    )} />
+                )}
             </div>
         </div>
     );
