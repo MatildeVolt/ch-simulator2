@@ -9,28 +9,66 @@ interface MeshRefinerProps {
     onPenalty: (msg: string) => void;
 }
 
-// ── Pixelation Calculation ──────────────────────────────────────────────────
-// Returns a divisor for the image size. 1 = crisp, higher = more pixelated.
-function getPixelDivisor(density: number): number {
-    // 0% density -> 16px blocks, 100% density -> 1px (crisp)
-    // We use a non-linear scale for better feel
-    if (density > 95) return 1;
-    if (density > 80) return 2;
-    if (density > 60) return 4;
-    if (density > 40) return 8;
-    if (density > 20) return 12;
-    return 16;
-}
-
 export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
     const [isDay, setIsDay] = useState(true);
     const [meshDensity, setMeshDensity] = useState(100);
     const [cycleTime, setCycleTime] = useState(15);
     const [isMoving, setIsMoving] = useState(false);
+
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const imageRef = useRef<HTMLImageElement | null>(null);
     const lastPenaltyTime = useRef(0);
     const moveTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    // Day/Night Cycle Logic
+    // ── Load Image ──────────────────────────────────────────────────────────
+    useEffect(() => {
+        const img = new Image();
+        img.src = "/matterhorn-custom.jpg";
+        img.onload = () => {
+            imageRef.current = img;
+            drawPixelated();
+        };
+    }, []);
+
+    // ── Draw Logic ──────────────────────────────────────────────────────────
+    const drawPixelated = () => {
+        const canvas = canvasRef.current;
+        const img = imageRef.current;
+        if (!canvas || !img) return;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Density determines the "internal" resolution
+        // 100% -> full res, 0% -> very low res
+        // We range from 1x (crisp) to 20x (pixelated)
+        const pixelScale = Math.max(1, Math.round(20 - (meshDensity / 100) * 19));
+
+        const sw = Math.max(1, Math.floor(w / pixelScale));
+        const sh = Math.max(1, Math.floor(h / pixelScale));
+
+        // Disable smoothing for blocky look
+        ctx.imageSmoothingEnabled = false;
+
+        // Draw downscaled to a temporary area or directly using scaling
+        // Best way: draw small then draw back large
+        ctx.clearRect(0, 0, w, h);
+
+        // Use an offscreen context-like approach by drawing small on the same canvas area
+        // or just using the drawImage parameters for scaling
+        ctx.drawImage(img, 0, 0, sw, sh);
+        ctx.drawImage(canvas, 0, 0, sw, sh, 0, 0, w, h);
+    };
+
+    // Redraw whenever density changes
+    useEffect(() => {
+        drawPixelated();
+    }, [meshDensity]);
+
+    // ── Day/Night Cycle ──────────────────────────────────────────────────────
     useEffect(() => {
         const interval = setInterval(() => {
             setIsDay((prev) => !prev);
@@ -47,9 +85,9 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
         };
     }, []);
 
-    // Energy Penalty Logic (Stationary Only)
+    // ── Energy Penalty Logic (Stationary Only) ───────────────────────────────
     useEffect(() => {
-        if (isMoving) return; // Don't penalize while moving
+        if (isMoving) return;
 
         const checkEnergy = () => {
             const now = Date.now();
@@ -75,13 +113,12 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
         if (moveTimeout.current) clearTimeout(moveTimeout.current);
         moveTimeout.current = setTimeout(() => {
             setIsMoving(false);
-        }, 500); // 500ms after last move, we consider it stationary
+        }, 500);
     };
 
     const isPenalty = !isMoving && ((isDay && meshDensity < 80) || (!isDay && meshDensity > 20));
-    const divisor = getPixelDivisor(meshDensity);
 
-    // Fidelity Label Styling
+    // Fidelity Label
     const fidelityLabel = meshDensity <= 30 ? "SKELETAL" : meshDensity <= 70 ? "MEDIUM" : "HI_FIDELITY";
     const fidelityClass = meshDensity <= 30
         ? "text-red-400 bg-red-500/10 border-red-500/30"
@@ -94,34 +131,14 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
             {/* ── 2-Column Grid Area ────────────────────────────────────── */}
             <div className="grid grid-cols-[2fr_1fr] gap-3 items-stretch">
 
-                {/* Left: Pixelating Image */}
-                <div className="relative rounded-xl border border-white/5 overflow-hidden bg-black min-h-[130px]">
-                    <div className="absolute inset-0">
-                        {/* Stable Pixelation Trick */}
-                        <div
-                            className="w-full h-full relative"
-                            style={{ imageRendering: "pixelated" }}
-                        >
-                            {/* Inner container scales down, main container scales up */}
-                            <div
-                                className="absolute inset-0"
-                                style={{
-                                    width: `${100 / divisor}%`,
-                                    height: `${100 / divisor}%`,
-                                    transform: `scale(${divisor})`,
-                                    transformOrigin: '0 0'
-                                }}
-                            >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    alt="Matterhorn"
-                                    src="/matterhorn-custom.jpg"
-                                    className="w-full h-full object-cover"
-                                    style={{ imageRendering: "pixelated" }}
-                                />
-                            </div>
-                        </div>
-                    </div>
+                {/* Left: Pixelating Canvas */}
+                <div className="relative rounded-xl border border-white/5 overflow-hidden bg-black min-h-[130px] flex items-center justify-center">
+                    <canvas
+                        ref={canvasRef}
+                        width={400} // High base resolution for the canvas element itself
+                        height={260}
+                        className="w-full h-full object-cover"
+                    />
 
                     {/* Dark Overlay Gradient */}
                     <div className={cn(
@@ -145,7 +162,7 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                                 animate={{ opacity: [0, 1, 0] }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 1.2, repeat: Infinity }}
-                                className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center justify-center"
+                                className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center justify-center placeholder-shift-fix"
                             >
                                 <span className="font-mono text-[9px] text-red-500 font-bold border border-red-500/50 px-2 py-0.5 bg-black/80 backdrop-blur-sm">
                                     {isDay ? "LOW_FIDELITY_STATIONARY" : "EFFICIENCY_VIOLATION"}
@@ -204,10 +221,10 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                     onChange={(e) => handleSliderChange(parseInt(e.target.value))}
                     className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-cyan-400 outline-none transition-all hover:bg-white/20"
                 />
-                <div className="flex justify-between font-mono text-[8px] text-white/15 tracking-tighter uppercase">
-                    <span>ECO_SAVING</span>
-                    <span>NOMINAL</span>
-                    <span>HD_STREAM</span>
+                <div className="flex justify-between font-mono text-[8px] text-white/15 tracking-tighter uppercase relative">
+                    <span>BLOCKY</span>
+                    <span className="absolute left-1/2 -translate-x-1/2">NOMINAL</span>
+                    <span>HIGH_RES</span>
                 </div>
             </div>
         </div>
