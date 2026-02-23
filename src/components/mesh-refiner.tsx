@@ -85,7 +85,7 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
         };
     }, []);
 
-    // ── Energy Penalty Logic (Stationary Only) ───────────────────────────────
+    // Energy Penalty Logic (Stationary Only)
     useEffect(() => {
         if (isMoving) return;
 
@@ -93,10 +93,10 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
             const now = Date.now();
             if (now - lastPenaltyTime.current < 2000) return;
 
-            if (isDay && meshDensity < 80) {
+            if (isDay && meshDensity <= 70) {
                 onPenalty("LOW_FIDELITY_STATIONARY_WARNING");
                 lastPenaltyTime.current = now;
-            } else if (!isDay && meshDensity > 20) {
+            } else if (!isDay && meshDensity >= 30) {
                 onPenalty("ENERGY_OVERCONSUMPTION_STATIONARY");
                 lastPenaltyTime.current = now;
             }
@@ -116,7 +116,7 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
         }, 500);
     };
 
-    const isPenalty = !isMoving && ((isDay && meshDensity < 80) || (!isDay && meshDensity > 20));
+    const isPenalty = !isMoving && ((isDay && meshDensity <= 70) || (!isDay && meshDensity >= 30));
 
     // Fidelity Label
     const fidelityLabel = meshDensity <= 30 ? "SKELETAL" : meshDensity <= 70 ? "MEDIUM" : "HI_FIDELITY";
@@ -165,7 +165,7 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                                 className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center justify-center placeholder-shift-fix"
                             >
                                 <span className="font-mono text-[9px] text-red-500 font-bold border border-red-500/50 px-2 py-0.5 bg-black/80 backdrop-blur-sm">
-                                    {isDay ? "LOW_FIDELITY_STATIONARY" : "EFFICIENCY_VIOLATION"}
+                                    {isDay ? "LOW_FIDELITY_DETECTED" : "EFFICIENCY_VIOLATION"}
                                 </span>
                             </motion.div>
                         )}
@@ -174,28 +174,37 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
 
                 {/* Right: Day/Night Status Panel */}
                 <div className={cn(
-                    "min-h-[130px] rounded-xl border flex flex-col items-center justify-center gap-3 transition-colors duration-700",
-                    isDay ? "border-cyan-500/40 bg-cyan-950/20"
-                        : "border-slate-600/40 bg-slate-900/40"
+                    "min-h-[130px] rounded-xl border flex flex-col items-center justify-center gap-2 transition-colors duration-700 px-2 text-center",
+                    isPenalty
+                        ? "border-red-500/50 bg-red-950/20"
+                        : isDay
+                            ? "border-cyan-500/40 bg-cyan-950/20"
+                            : "border-slate-600/40 bg-slate-900/40"
                 )}>
                     <AnimatePresence mode="wait">
                         {isDay ? (
                             <motion.div key="sun" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
                                 className="flex flex-col items-center gap-1">
-                                <Sun className="w-10 h-10 text-cyan-400" strokeWidth={1.2} />
-                                <span className="font-mono text-[9px] text-cyan-400 font-bold tracking-widest">DAY</span>
+                                <Sun className={cn("w-10 h-10 transition-colors", isPenalty ? "text-red-500" : "text-cyan-400")} strokeWidth={1.2} />
+                                <span className={cn("font-mono text-[9px] font-bold tracking-widest", isPenalty ? "text-red-500" : "text-cyan-400")}>DAY</span>
                             </motion.div>
                         ) : (
                             <motion.div key="moon" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
                                 className="flex flex-col items-center gap-1">
-                                <Moon className="w-10 h-10 text-white" strokeWidth={1.2} />
-                                <span className="font-mono text-[9px] text-white/60 font-bold tracking-widest">NIGHT</span>
+                                <Moon className={cn("w-10 h-10 transition-colors", isPenalty ? "text-red-500" : "text-white")} strokeWidth={1.2} />
+                                <span className={cn("font-mono text-[9px] font-bold tracking-widest", isPenalty ? "text-red-500" : "text-white/60")}>NIGHT</span>
                             </motion.div>
                         )}
                     </AnimatePresence>
-                    <div className="flex flex-col items-center">
-                        <span className="font-mono text-[9px] text-white/10 uppercase tracking-tighter">NEXT_CYCLE</span>
-                        <span className="font-mono text-[11px] text-white/30 font-bold">{cycleTime}S</span>
+
+                    <div className="flex flex-col items-center gap-0.5">
+                        <span className={cn(
+                            "font-mono text-[8px] font-bold px-1.5 py-0.5 rounded tracking-tighter uppercase",
+                            isPenalty ? "bg-red-500/20 text-red-500" : "bg-cyan-500/20 text-cyan-400"
+                        )}>
+                            {isPenalty ? "[STATUS: VIOLATION]" : "[STATUS: OPTIMIZED]"}
+                        </span>
+                        <span className="font-mono text-[9px] text-white/30 font-bold uppercase tracking-tight">Cycle: {cycleTime}S</span>
                     </div>
                 </div>
             </div>
