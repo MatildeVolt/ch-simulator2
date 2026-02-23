@@ -249,6 +249,16 @@ export default function KernelPage() {
                             </motion.div>
                         </MotionCard>
 
+                        {/* Instruction Card (Static) */}
+                        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-xl flex flex-col gap-2">
+                            <div className="hud-label !text-cyan-400 font-mono !text-[10px] tracking-widest opacity-100">
+                                // RESOURCE_MANAGEMENT
+                            </div>
+                            <p className="font-mono text-[11px] leading-relaxed text-white/70">
+                                Adjust mesh density to match the solar cycle. High-fidelity rendering is restricted to daylight hours for energy optimization.
+                            </p>
+                        </div>
+
                         {/* Module 04 Pillar Intelligence (Smart Advisory Core) */}
                         <CowAdvisory
                             isDay={isDay}
