@@ -23,7 +23,7 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
     useEffect(() => {
         const initialBlips = Array.from({ length: 3 }).map(() => ({
             id: nextId.current++,
-            angle: Math.random() * 360,
+            angle: 250 + Math.random() * 40, // Top border range (centered around 270)
             distance: 80 + Math.random() * 20,
             speed: 0.05 + Math.random() * 0.1
         }));
@@ -42,7 +42,7 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
                         // Respawn immediately to maintain 3
                         return {
                             id: nextId.current++,
-                            angle: Math.random() * 360,
+                            angle: 250 + Math.random() * 40, // Top border
                             distance: 100,
                             speed: 0.05 + Math.random() * 0.1
                         };
@@ -65,7 +65,7 @@ export default function SwanRadar({ onBreach }: SwanRadarProps) {
         setBlips((current) =>
             current.map(blip => blip.id === id ? {
                 id: nextId.current++,
-                angle: Math.random() * 360,
+                angle: 250 + Math.random() * 40, // Top border
                 distance: 100,
                 speed: 0.05 + Math.random() * 0.1
             } : blip)
