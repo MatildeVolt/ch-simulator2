@@ -13,9 +13,9 @@ interface MeshRefinerProps {
 // Scale an image to (1/n) of container, then CSS-scale it back up with
 // image-rendering: pixelated — no libraries needed.
 // n: 1 = crisp (100% density), 20 = very pixelated (0% density)
+// density 0 → n=40 (large blocks), density 100 → n=1 (crisp)
 function getPixelScale(density: number): number {
-    // density 0 → n=20 (big blocks), density 100 → n=1 (crisp)
-    return Math.max(1, Math.round(20 - (density / 100) * 19));
+    return Math.max(1, Math.round(40 - (density / 100) * 39));
 }
 
 export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
@@ -41,7 +41,7 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
     }, [isDay, meshDensity, onPenalty]);
 
     const isPenalty = (isDay && meshDensity < 80) || (!isDay && meshDensity > 20);
-    const pixelN = getPixelScale(meshDensity);
+    const pixelFactor = getPixelScale(meshDensity);
 
     // Fidelity label
     const fidelityLabel = meshDensity <= 30 ? "SKELETAL" : meshDensity <= 70 ? "MEDIUM" : "HI_FIDELITY";
@@ -57,28 +57,41 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
             {/* ── 2-column area ─────────────────────────────────────────── */}
             <div className="grid grid-cols-[2fr_1fr] gap-3 items-stretch">
 
-                {/* Left: Pixelating Matterhorn image */}
+                {/* Left: Pixelating scaling container */}
                 <div className="relative rounded-xl border border-white/5 overflow-hidden bg-black min-h-[130px]">
 
-                    {/* The image — pixelation trick via scale + image-rendering */}
-                    <div
-                        className="absolute inset-0 overflow-hidden"
-                        style={{ imageRendering: "pixelated" }}
-                    >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                            alt="Matterhorn"
-                            src="/matterhorn-custom.jpg"
-                            className="absolute top-0 left-0 object-cover"
+                    {/* 
+                        FIX: To ensure pixelation without shifting:
+                        1. Outer container (absolute inset-0) is the viewport.
+                        2. Pixelated container (style={{imageRendering: 'pixelated'}})
+                        3. Inner div scaled down to 1/N
+                        4. Image inside fills the 1/N div then scales UP by N
+                    */}
+                    <div className="absolute inset-0 pointer-events-none" style={{
+                        imageRendering: 'pixelated'
+                    }}>
+                        <div
+                            className="absolute top-0 left-0 w-full h-full"
                             style={{
-                                imageRendering: "pixelated",
-                                width: `${100 / pixelN}%`,
-                                height: `${100 / pixelN}%`,
-                                transform: `scale(${pixelN})`,
-                                transformOrigin: "top left",
-                                transition: "none",
+                                width: `${100 / pixelFactor}%`,
+                                height: `${100 / pixelFactor}%`,
+                                transform: `scale(${pixelFactor})`,
+                                transformOrigin: "0 0",
                             }}
-                        />
+                        >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                alt="Swiss Alps"
+                                src="/matterhorn-custom.jpg"
+                                className="w-full h-full object-cover"
+                                style={{
+                                    imageRendering: 'pixelated',
+                                    // Fallbacks for older browsers if needed
+                                    // @ts-ignore
+                                    interpolationMode: 'nearest-neighbor'
+                                }}
+                            />
+                        </div>
                     </div>
 
                     {/* Dark overlay gradient – day lighter, night darker */}
