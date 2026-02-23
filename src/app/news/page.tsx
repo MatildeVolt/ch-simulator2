@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 export default async function NewsPage() {
     const supabase = await createClient();
