@@ -97,42 +97,108 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
         : "rgba(34,211,238,0.28)";
 
     return (
-        <div className="flex flex-col h-full space-y-4 pb-8">
+        <div className="flex flex-col h-full space-y-4 pb-8 relative">
+
+            {/* ── Ambient background gradient per cycle ─────────────────────── */}
+            <AnimatePresence mode="wait">
+                {isDay ? (
+                    <motion.div
+                        key="day-bg"
+                        className="absolute inset-0 rounded-2xl pointer-events-none z-0"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.2 }}
+                        style={{ background: "radial-gradient(ellipse at 90% 10%, rgba(34,211,238,0.08) 0%, transparent 60%)" }}
+                    />
+                ) : (
+                    <motion.div
+                        key="ngt-bg"
+                        className="absolute inset-0 rounded-2xl pointer-events-none z-0"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.2 }}
+                        style={{ background: "radial-gradient(ellipse at 90% 10%, rgba(30,41,59,0.45) 0%, transparent 60%)" }}
+                    />
+                )}
+            </AnimatePresence>
 
             {/* ── Header ──────────────────────────────────────────────────── */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between relative z-10">
+                {/* Left: label + tier badge */}
+                <div className="flex flex-col gap-1">
                     <AnimatePresence mode="wait">
                         {isDay ? (
-                            <motion.div key="day-hdr" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                className="flex items-center gap-2">
-                                <Sun className="w-4 h-4 text-cyan-400 animate-pulse" />
-                                <span className="font-mono text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Day Mode // Operational</span>
-                            </motion.div>
+                            <motion.span
+                                key="day-lbl"
+                                initial={{ opacity: 0, x: -6 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 6 }}
+                                transition={{ duration: 0.35 }}
+                                className="font-mono text-[11px] text-cyan-400 font-black uppercase tracking-widest"
+                            >
+                                Day Mode // Operational
+                            </motion.span>
                         ) : (
-                            <motion.div key="ngt-hdr" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                className="flex items-center gap-2">
-                                <Moon className="w-4 h-4 text-slate-400" />
-                                <span className="font-mono text-[10px] text-slate-400 font-bold uppercase tracking-wider">Night Mode // Energy Saving</span>
-                            </motion.div>
+                            <motion.span
+                                key="ngt-lbl"
+                                initial={{ opacity: 0, x: -6 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 6 }}
+                                transition={{ duration: 0.35 }}
+                                className="font-mono text-[11px] text-slate-300 font-black uppercase tracking-widest"
+                            >
+                                Night Mode // Energy Saving
+                            </motion.span>
                         )}
                     </AnimatePresence>
+
+                    <div className="flex items-center gap-2">
+                        <span className={cn(
+                            "font-mono text-[9px] font-bold px-1.5 py-0.5 rounded tracking-widest",
+                            tier === "low" && "text-red-400 bg-red-500/10 border border-red-500/20",
+                            tier === "mid" && "text-yellow-400 bg-yellow-500/10 border border-yellow-500/20",
+                            tier === "high" && "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20",
+                        )}>
+                            {tier === "low" ? "SKELETAL" : tier === "mid" ? "MEDIUM" : "HI_FIDELITY"}
+                        </span>
+                        <span className="font-mono text-[9px] text-white/25">T–{cycleTime}S</span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className={cn(
-                        "font-mono text-[9px] font-bold px-1.5 py-0.5 rounded tracking-widest",
-                        tier === "low" && "text-red-400 bg-red-500/10 border border-red-500/20",
-                        tier === "mid" && "text-yellow-400 bg-yellow-500/10 border border-yellow-500/20",
-                        tier === "high" && "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20",
-                    )}>
-                        {tier === "low" ? "SKELETAL" : tier === "mid" ? "MEDIUM" : "HI_FIDELITY"}
-                    </span>
-                    <span className="font-mono text-[10px] text-white/30">T–{cycleTime}S</span>
-                </div>
+
+                {/* Right: large glowing celestial icon */}
+                <AnimatePresence mode="wait">
+                    {isDay ? (
+                        <motion.div
+                            key="sun-icon"
+                            initial={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                            exit={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="flex items-center justify-center w-14 h-14 rounded-full"
+                            style={{ filter: "drop-shadow(0 0 16px rgba(34,211,238,0.6))" }}
+                        >
+                            <Sun className="w-10 h-10 text-cyan-400" strokeWidth={1.5} />
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="moon-icon"
+                            initial={{ opacity: 0, scale: 0.5, rotate: 45 }}
+                            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                            exit={{ opacity: 0, scale: 0.5, rotate: -45 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="flex items-center justify-center w-14 h-14 rounded-full"
+                            style={{ filter: "drop-shadow(0 0 12px rgba(226,232,240,0.45))" }}
+                        >
+                            <Moon className="w-9 h-9 text-slate-200" strokeWidth={1.5} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* ── Mountain Render Area ─────────────────────────────────────── */}
-            <div className="relative flex-1 min-h-[140px] flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+            <div className="relative flex-1 min-h-[140px] flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden z-10">
                 <motion.svg
                     width="100%"
                     height="100%"
