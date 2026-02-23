@@ -9,11 +9,21 @@ interface MeshRefinerProps {
     onPenalty: (msg: string) => void;
 }
 
+function getPixelDivisor(density: number): number {
+    if (density > 95) return 1;
+    if (density > 80) return 2;
+    if (density > 60) return 4;
+    if (density > 40) return 8;
+    if (density > 20) return 12;
+    return 16;
+}
+
 export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
     const [isDay, setIsDay] = useState(true);
     const [meshDensity, setMeshDensity] = useState(100);
     const [cycleTime, setCycleTime] = useState(15);
     const [isMoving, setIsMoving] = useState(false);
+    const [isCycleGrace, setIsCycleGrace] = useState(false);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -30,7 +40,6 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
         };
     }, []);
 
-    // ── Draw Logic ──────────────────────────────────────────────────────────
     const drawPixelated = () => {
         const canvas = canvasRef.current;
         const img = imageRef.current;
@@ -41,62 +50,56 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
 
         const w = canvas.width;
         const h = canvas.height;
-
-        // Density determines the "internal" resolution
-        // 100% -> full res, 0% -> very low res
-        // We range from 1x (crisp) to 20x (pixelated)
-        const pixelScale = Math.max(1, Math.round(20 - (meshDensity / 100) * 19));
+        const pixelScale = getPixelDivisor(meshDensity);
 
         const sw = Math.max(1, Math.floor(w / pixelScale));
         const sh = Math.max(1, Math.floor(h / pixelScale));
 
-        // Disable smoothing for blocky look
         ctx.imageSmoothingEnabled = false;
-
-        // Draw downscaled to a temporary area or directly using scaling
-        // Best way: draw small then draw back large
         ctx.clearRect(0, 0, w, h);
-
-        // Use an offscreen context-like approach by drawing small on the same canvas area
-        // or just using the drawImage parameters for scaling
         ctx.drawImage(img, 0, 0, sw, sh);
         ctx.drawImage(canvas, 0, 0, sw, sh, 0, 0, w, h);
     };
 
-    // Redraw whenever density changes
     useEffect(() => {
         drawPixelated();
     }, [meshDensity]);
 
-    // ── Day/Night Cycle ──────────────────────────────────────────────────────
+    // ── Day/Night Cycle Logic with Grace ─────────────────────────────────────
     useEffect(() => {
-        const interval = setInterval(() => {
+        const cycleInterval = setInterval(() => {
             setIsDay((prev) => !prev);
             setCycleTime(15);
+            // Grant 3s grace period to react to the new cycle
+            setIsCycleGrace(true);
+            setTimeout(() => setIsCycleGrace(false), 3000);
         }, 15000);
 
-        const timer = setInterval(() => {
+        const timerInterval = setInterval(() => {
             setCycleTime((prev) => (prev > 0 ? prev - 1 : 15));
         }, 1000);
 
         return () => {
-            clearInterval(interval);
-            clearInterval(timer);
+            clearInterval(cycleInterval);
+            clearInterval(timerInterval);
         };
     }, []);
 
-    // Energy Penalty Logic (Stationary Only)
+    // ── Energy Penalty Logic (Stationary & Clear of Grace) ───────────────────
     useEffect(() => {
-        if (isMoving) return;
+        if (isMoving || isCycleGrace) return;
 
         const checkEnergy = () => {
             const now = Date.now();
-            if (now - lastPenaltyTime.current < 2000) return;
+            if (now - lastPenaltyTime.current < 2500) return;
 
-            if (isDay && meshDensity <= 70) {
+            // Updated Thresholds (Strict but inclusive):
+            // Success Day: >= 70
+            // Success Night: <= 30
+            if (isDay && meshDensity < 70) {
                 onPenalty("LOW_FIDELITY_STATIONARY_WARNING");
                 lastPenaltyTime.current = now;
-            } else if (!isDay && meshDensity >= 30) {
+            } else if (!isDay && meshDensity > 30) {
                 onPenalty("ENERGY_OVERCONSUMPTION_STATIONARY");
                 lastPenaltyTime.current = now;
             }
@@ -104,25 +107,22 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
 
         const interval = setInterval(checkEnergy, 1000);
         return () => clearInterval(interval);
-    }, [isDay, meshDensity, onPenalty, isMoving]);
+    }, [isDay, meshDensity, onPenalty, isMoving, isCycleGrace]);
 
     const handleSliderChange = (val: number) => {
         setMeshDensity(val);
         setIsMoving(true);
-
         if (moveTimeout.current) clearTimeout(moveTimeout.current);
-        moveTimeout.current = setTimeout(() => {
-            setIsMoving(false);
-        }, 500);
+        moveTimeout.current = setTimeout(() => setIsMoving(false), 600);
     };
 
-    const isPenalty = !isMoving && ((isDay && meshDensity <= 70) || (!isDay && meshDensity >= 30));
+    // Derived Penalty State for UI
+    const isPenalty = !isMoving && !isCycleGrace && ((isDay && meshDensity < 70) || (!isDay && meshDensity > 30));
 
-    // Fidelity Label
-    const fidelityLabel = meshDensity <= 30 ? "SKELETAL" : meshDensity <= 70 ? "MEDIUM" : "HI_FIDELITY";
-    const fidelityClass = meshDensity <= 30
-        ? "text-red-400 bg-red-500/10 border-red-500/30"
-        : meshDensity <= 70
+    const fidelityLabel = meshDensity < 30 ? "ECO_MODE" : meshDensity < 70 ? "OPTIMIZED" : "HI_FIDELITY";
+    const fidelityClass = meshDensity < 30
+        ? "text-green-400 bg-green-500/10 border-green-500/30"
+        : meshDensity < 70
             ? "text-yellow-400 bg-yellow-500/10 border-yellow-500/30"
             : "text-cyan-400 bg-cyan-500/10 border-cyan-500/30";
 
@@ -133,28 +133,20 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
 
                 {/* Left: Pixelating Canvas */}
                 <div className="relative rounded-xl border border-white/5 overflow-hidden bg-black min-h-[130px] flex items-center justify-center">
-                    <canvas
-                        ref={canvasRef}
-                        width={400} // High base resolution for the canvas element itself
-                        height={260}
-                        className="w-full h-full object-cover"
-                    />
+                    <canvas ref={canvasRef} width={400} height={260} className="w-full h-full object-cover" />
 
-                    {/* Dark Overlay Gradient */}
                     <div className={cn(
                         "absolute inset-0 pointer-events-none transition-colors duration-700",
                         isDay ? "bg-gradient-to-t from-black/40 via-transparent"
-                            : "bg-gradient-to-t from-black/70 via-black/40"
+                            : "bg-gradient-to-t from-black/70 via-black/40 font-bold"
                     )} />
 
-                    {/* Fidelity Badge */}
                     <div className="absolute bottom-2 left-2">
                         <span className={cn("font-mono text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-tighter", fidelityClass)}>
                             {fidelityLabel} / {meshDensity}%
                         </span>
                     </div>
 
-                    {/* Stationary Penalty Flash Overlay */}
                     <AnimatePresence>
                         {isPenalty && (
                             <motion.div
@@ -162,78 +154,105 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                                 animate={{ opacity: [0, 1, 0] }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 1.2, repeat: Infinity }}
-                                className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center justify-center placeholder-shift-fix"
+                                className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center justify-center"
                             >
-                                <span className="font-mono text-[9px] text-red-500 font-bold border border-red-500/50 px-2 py-0.5 bg-black/80 backdrop-blur-sm">
-                                    {isDay ? "LOW_FIDELITY_DETECTED" : "EFFICIENCY_VIOLATION"}
+                                <span className="font-mono text-[9px] text-red-500 font-bold border border-red-500/50 px-2 py-0.5 bg-black/80 backdrop-blur-sm shadow-lg">
+                                    {isDay ? "HI_RES_REQUIRED" : "NIGHT_OVERCONSUMPTION"}
                                 </span>
                             </motion.div>
                         )}
                     </AnimatePresence>
+
+                    {/* Cycle Grace Indicator */}
+                    {isCycleGrace && (
+                        <div className="absolute top-2 right-2">
+                            <span className="font-mono text-[8px] bg-white/10 text-white/40 px-1 py-0.5 rounded animate-pulse uppercase">
+                                Cycle Syncing...
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right: Day/Night Status Panel */}
                 <div className={cn(
-                    "min-h-[130px] rounded-xl border flex flex-col items-center justify-center gap-2 transition-colors duration-700 px-2 text-center",
+                    "min-h-[130px] rounded-xl border flex flex-col items-center justify-center gap-2 transition-colors duration-700 px-2 text-center relative overflow-hidden",
                     isPenalty
                         ? "border-red-500/50 bg-red-950/20"
                         : isDay
-                            ? "border-cyan-500/40 bg-cyan-950/20"
+                            ? "border-cyan-500/40 bg-cyan-950/10"
                             : "border-slate-600/40 bg-slate-900/40"
                 )}>
+                    {isCycleGrace && (
+                        <motion.div
+                            className="absolute inset-x-0 bottom-0 h-0.5 bg-white/20"
+                            initial={{ width: "100%" }}
+                            animate={{ width: "0%" }}
+                            transition={{ duration: 3, ease: "linear" }}
+                        />
+                    )}
+
                     <AnimatePresence mode="wait">
                         {isDay ? (
-                            <motion.div key="sun" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                            <motion.div key="sun" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                                 className="flex flex-col items-center gap-1">
-                                <Sun className={cn("w-10 h-10 transition-colors", isPenalty ? "text-red-500" : "text-cyan-400")} strokeWidth={1.2} />
-                                <span className={cn("font-mono text-[9px] font-bold tracking-widest", isPenalty ? "text-red-500" : "text-cyan-400")}>DAY</span>
+                                <Sun className={cn("w-10 h-10 transition-colors", isPenalty ? "text-red-500" : "text-cyan-400")} strokeWidth={1} />
+                                <span className={cn("font-mono text-[10px] font-bold tracking-widest", isPenalty ? "text-red-500" : "text-cyan-400")}>DAY_CYCLE</span>
                             </motion.div>
                         ) : (
-                            <motion.div key="moon" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                            <motion.div key="moon" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                                 className="flex flex-col items-center gap-1">
-                                <Moon className={cn("w-10 h-10 transition-colors", isPenalty ? "text-red-500" : "text-white")} strokeWidth={1.2} />
-                                <span className={cn("font-mono text-[9px] font-bold tracking-widest", isPenalty ? "text-red-500" : "text-white/60")}>NIGHT</span>
+                                <Moon className={cn("w-10 h-10 transition-colors", isPenalty ? "text-red-500" : "text-white")} strokeWidth={1} />
+                                <span className={cn("font-mono text-[10px] font-bold tracking-widest", isPenalty ? "text-red-500" : "text-white/60")}>NIGHT_CYCLE</span>
                             </motion.div>
                         )}
                     </AnimatePresence>
 
-                    <div className="flex flex-col items-center gap-0.5">
+                    <div className="flex flex-col items-center gap-0.5 z-10">
                         <span className={cn(
-                            "font-mono text-[8px] font-bold px-1.5 py-0.5 rounded tracking-tighter uppercase",
-                            isPenalty ? "bg-red-500/20 text-red-500" : "bg-cyan-500/20 text-cyan-400"
+                            "font-mono text-[8px] font-bold px-1.5 py-0.5 rounded tracking-tighter uppercase transition-colors",
+                            isPenalty ? "bg-red-500/20 text-red-400" : "bg-cyan-500/10 text-cyan-400/70"
                         )}>
-                            {isPenalty ? "[STATUS: VIOLATION]" : "[STATUS: OPTIMIZED]"}
+                            {isPenalty ? "[!] SYSTEM_VIOLATION" : isCycleGrace ? "[*] WAIT_SYNC" : "[✓] NOMINAL_OP"}
                         </span>
-                        <span className="font-mono text-[9px] text-white/30 font-bold uppercase tracking-tight">Cycle: {cycleTime}S</span>
+                        <span className="font-mono text-[9px] text-white/30 font-bold uppercase tracking-tight">T–{cycleTime}S</span>
                     </div>
                 </div>
             </div>
 
-            {/* Mesh Density Slider */}
+            {/* Mesh Density Slider with Visual Range Hints */}
             <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
-                    <label className="font-mono text-[9px] text-white/40 tracking-widest uppercase">
-                        MESH_DENSITY
+                    <label className="font-mono text-[9px] text-white/40 tracking-widest uppercase flex items-center gap-2">
+                        <span>MESH_DENSITY</span>
+                        {isMoving && <span className="w-1 h-1 rounded-full bg-cyan-400 animate-ping" />}
                     </label>
                     <span className={cn(
-                        "font-mono text-[10px] font-bold transition-colors",
-                        isPenalty ? "text-red-500" : "text-cyan-400"
+                        "font-mono text-[10px] font-bold transition-all",
+                        isPenalty ? "text-red-500 scale-110" : "text-cyan-400"
                     )}>
                         {meshDensity}%
                     </span>
                 </div>
-                <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={meshDensity}
-                    onChange={(e) => handleSliderChange(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-cyan-400 outline-none transition-all hover:bg-white/20"
-                />
-                <div className="flex justify-between font-mono text-[8px] text-white/15 tracking-tighter uppercase relative">
-                    <span>BLOCKY</span>
-                    <span className="absolute left-1/2 -translate-x-1/2">NOMINAL</span>
-                    <span>HIGH_RES</span>
+
+                <div className="relative pt-1">
+                    {/* Visual markers for thresholds */}
+                    <div className="absolute top-0 left-[30%] w-px h-1 bg-white/20" />
+                    <div className="absolute top-0 left-[70%] w-px h-1 bg-white/20" />
+
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={meshDensity}
+                        onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+                        className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-cyan-400 outline-none transition-all hover:bg-white/20"
+                    />
+                </div>
+
+                <div className="flex justify-between font-mono text-[8px] text-white/15 tracking-tighter uppercase px-1">
+                    <span className={cn(!isDay && "text-green-500/50")}>ECO_LO</span>
+                    <span className="opacity-40">NOMINAL</span>
+                    <span className={cn(isDay && "text-cyan-500/50")}>HDR_SYNC</span>
                 </div>
             </div>
         </div>
