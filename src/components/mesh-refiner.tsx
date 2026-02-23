@@ -14,8 +14,10 @@ interface MeshRefinerProps {
 // image-rendering: pixelated — no libraries needed.
 // n: 1 = crisp (100% density), 20 = very pixelated (0% density)
 function getPixelScale(density: number): number {
-    // density 0 → n=20 (big blocks), density 100 → n=1 (crisp)
-    return Math.max(1, Math.round(20 - (density / 100) * 19));
+    if (density >= 100) return 1;
+    // density 0 → n=80 (huge blocks), density 100 → n=1 (crisp)
+    // Higher number = more pixelation. 80x is very aggressive.
+    return 1 + Math.floor(((100 - density) / 100) * 80);
 }
 
 export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
@@ -61,31 +63,25 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                 <div className="relative rounded-xl border border-white/5 overflow-hidden bg-black min-h-[130px] flex items-center justify-center">
 
                     {/* ── Pixelation Engine ─────────────────────────────────── */}
-                    {/* Outer wrapper keeps the layout shape fixed */}
+                    {/* The image is physically constrained to a tiny percentage of the area, then scaled up */}
                     <div className="absolute inset-0 overflow-hidden">
-                        {/* Intermediate container tracks the "resolution" scale */}
                         <div
-                            className="w-full h-full transform-gpu overflow-hidden"
+                            className="w-full h-full transform-gpu"
                             style={{
-                                transform: `scale(${1 / pixelN})`,
+                                width: `${100 / pixelN}%`,
+                                height: `${100 / pixelN}%`,
+                                transform: `scale(${pixelN})`,
                                 transformOrigin: "top left",
-                                width: `${pixelN * 100}%`,
-                                height: `${pixelN * 100}%`,
                                 imageRendering: "pixelated",
                             }}
                         >
-                            {/* Real image inverse-scales to keep the "zoom" constant */}
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 alt="Matterhorn"
                                 src="/matterhorn-custom.jpg"
-                                className="absolute inset-0 w-full h-full object-cover"
+                                className="w-full h-full object-cover"
                                 style={{
                                     imageRendering: "pixelated",
-                                    transform: `scale(${pixelN})`,
-                                    transformOrigin: "top left",
-                                    width: `${100 / pixelN}%`,
-                                    height: `${100 / pixelN}%`,
                                 }}
                             />
                         </div>
