@@ -52,9 +52,9 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
     }, [isDay, meshDensity, onPenalty]);
 
     return (
-        <div className="flex flex-col h-full space-y-4">
-            {/* Header with Cycle Status */}
-            <div className="flex items-center justify-between">
+        <div className="flex flex-col h-full gap-3 pb-4">
+            {/* Row 1: Header */}
+            <div className="flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
                     {isDay ? (
                         <div className="flex items-center gap-2">
@@ -73,10 +73,10 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                 </div>
             </div>
 
-            {/* Matterhorn Rendering Area - Two Column Layout */}
-            <div className="flex flex-row gap-4 items-stretch min-h-[160px]">
-                {/* Left Column: Mountain */}
-                <div className="flex-1 flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden p-2 relative">
+            {/* Row 2: Visuals — mountain + celestial body */}
+            <div className="flex flex-row gap-3 flex-1 min-h-0 items-stretch">
+                {/* Left: Mountain Range */}
+                <div className="flex-1 flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden relative">
                     <AnimatePresence mode="wait">
                         {isDay ? (
                             <motion.svg
@@ -88,28 +88,22 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                                 initial={{ opacity: 0, scale: 0.95, y: 8 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 1.05, y: -8 }}
-                                className="drop-shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                                className="drop-shadow-[0_0_15px_rgba(34,211,238,0.2)] p-2"
                             >
-                                {/* Alpine range silhouette (High Poly Day) */}
-                                {/* Main mountain ridge outline */}
                                 <path
                                     d="M0 90 L30 65 L50 40 L70 55 L90 25 L110 50 L130 30 L155 10 L175 38 L195 20 L215 45 L235 30 L255 55 L270 40 L290 65 L300 90 Z"
                                     stroke="rgba(34,211,238,0.8)"
                                     strokeWidth="0.8"
                                     fill="transparent"
                                 />
-                                {/* Baseline */}
                                 <line x1="0" y1="90" x2="300" y2="90" stroke="rgba(34,211,238,0.4)" strokeWidth="0.5" />
-                                {/* Inner mesh: vertical lines from ridge to base */}
                                 {[30, 50, 70, 90, 110, 130, 155, 175, 195, 215, 235, 255, 270, 290].map((x, i) => {
                                     const ys = [65, 40, 55, 25, 50, 30, 10, 38, 20, 45, 30, 55, 40, 65];
                                     return <line key={i} x1={x} y1={ys[i]} x2={x} y2={90} stroke="rgba(34,211,238,0.25)" strokeWidth="0.3" />;
                                 })}
-                                {/* Cross-mesh lines (left slope to right slope) */}
                                 <polyline points="0,90 50,40 90,25 155,10 195,20 255,55 300,90" stroke="rgba(34,211,238,0.15)" strokeWidth="0.3" fill="none" />
                                 <polyline points="0,90 30,65 90,25 130,30 195,20 235,30 300,90" stroke="rgba(34,211,238,0.12)" strokeWidth="0.3" fill="none" />
                                 <polyline points="0,90 70,55 110,50 155,10 215,45 270,40 300,90" stroke="rgba(34,211,238,0.12)" strokeWidth="0.3" fill="none" />
-                                {/* Snow caps glow on peaks */}
                                 <circle cx="155" cy="10" r="2" fill="rgba(34,211,238,0.6)" />
                                 <circle cx="195" cy="20" r="1.5" fill="rgba(34,211,238,0.4)" />
                                 <circle cx="90" cy="25" r="1.5" fill="rgba(34,211,238,0.4)" />
@@ -124,8 +118,8 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                                 initial={{ opacity: 0, scale: 1.05, y: 8 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                                className="p-2"
                             >
-                                {/* Low-poly range: connected triangles (Night) */}
                                 <path
                                     d="M0 90 L40 50 L80 70 L120 30 L160 15 L200 45 L240 30 L275 60 L300 90 Z"
                                     stroke="rgba(255,255,255,0.35)"
@@ -133,7 +127,6 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                                     fill="rgba(255,255,255,0.04)"
                                 />
                                 <line x1="0" y1="90" x2="300" y2="90" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
-                                {/* Minimal inner lines */}
                                 <line x1="40" y1="50" x2="40" y2="90" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
                                 <line x1="120" y1="30" x2="120" y2="90" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
                                 <line x1="160" y1="15" x2="160" y2="90" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
@@ -148,17 +141,17 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: [0, 1, 0] }}
                             transition={{ duration: 1, repeat: Infinity }}
-                            className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-center justify-center"
+                            className="absolute inset-0 bg-red-500/10 pointer-events-none flex items-end justify-center pb-2"
                         >
-                            <span className="font-mono text-[8px] text-red-500 font-bold border border-red-500/50 px-2 py-1 bg-black/50 backdrop-blur-sm">
+                            <span className="font-mono text-[8px] text-red-500 font-bold border border-red-500/50 px-2 py-0.5 bg-black/60 backdrop-blur-sm">
                                 STATUS_ERR
                             </span>
                         </motion.div>
                     )}
                 </div>
 
-                {/* Right Column: Celestial Body */}
-                <div className="w-32 flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+                {/* Right: Celestial Body */}
+                <div className="w-24 flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden shrink-0">
                     <AnimatePresence mode="wait">
                         {isDay ? (
                             <motion.div
@@ -168,20 +161,13 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                                 exit={{ opacity: 0, rotate: 45, scale: 0.5 }}
                                 className="relative flex items-center justify-center"
                             >
-                                <div className="absolute w-12 h-12 bg-cyan-400/20 rounded-full blur-xl animate-pulse" />
-                                <svg width="60" height="60" viewBox="0 0 24 24" className="text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
+                                <div className="absolute w-10 h-10 bg-cyan-400/20 rounded-full blur-xl animate-pulse" />
+                                <svg width="52" height="52" viewBox="0 0 24 24" className="text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
                                     <circle cx="12" cy="12" r="5" fill="currentColor" />
                                     {Array.from({ length: 8 }).map((_, i) => (
-                                        <line
-                                            key={i}
-                                            x1="12"
-                                            y1="1"
-                                            x2="12"
-                                            y2="4"
+                                        <line key={i} x1="12" y1="1" x2="12" y2="4"
                                             transform={`rotate(${i * 45} 12 12)`}
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
+                                            stroke="currentColor" strokeWidth="2" strokeLinecap="round"
                                         />
                                     ))}
                                 </svg>
@@ -194,12 +180,9 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                                 exit={{ opacity: 0, x: -20, y: 20 }}
                                 className="relative flex items-center justify-center"
                             >
-                                <div className="absolute w-12 h-12 bg-white/5 rounded-full blur-lg" />
-                                <svg width="60" height="60" viewBox="0 0 24 24" className="text-gray-300 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
-                                    <path
-                                        d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
-                                        fill="currentColor"
-                                    />
+                                <div className="absolute w-10 h-10 bg-white/5 rounded-full blur-lg" />
+                                <svg width="52" height="52" viewBox="0 0 24 24" className="text-gray-300 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+                                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" fill="currentColor" />
                                 </svg>
                             </motion.div>
                         )}
@@ -207,10 +190,10 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                 </div>
             </div>
 
-            {/* Mesh Density Slider */}
-            <div className="space-y-3">
+            {/* Row 3: Mesh Density Slider */}
+            <div className="space-y-2 shrink-0">
                 <div className="flex justify-between items-center px-1">
-                    <label className="font-mono text-[9px] text-white/40 tracking-widest uppercase">
+                    <label className="font-mono text-[9px] text-cyan-400/70 tracking-widest uppercase">
                         MESH_DENSITY
                     </label>
                     <span className={cn(
@@ -237,3 +220,4 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
         </div>
     );
 }
+
