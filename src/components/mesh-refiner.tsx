@@ -13,9 +13,9 @@ interface MeshRefinerProps {
 // Scale an image to (1/n) of container, then CSS-scale it back up with
 // image-rendering: pixelated — no libraries needed.
 // n: 1 = crisp (100% density), 20 = very pixelated (0% density)
-// density 0 → n=40 (large blocks), density 100 → n=1 (crisp)
 function getPixelScale(density: number): number {
-    return Math.max(1, Math.round(40 - (density / 100) * 39));
+    // density 0 → n=20 (big blocks), density 100 → n=1 (crisp)
+    return Math.max(1, Math.round(20 - (density / 100) * 19));
 }
 
 export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
@@ -41,7 +41,7 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
     }, [isDay, meshDensity, onPenalty]);
 
     const isPenalty = (isDay && meshDensity < 80) || (!isDay && meshDensity > 20);
-    const pixelFactor = getPixelScale(meshDensity);
+    const pixelN = getPixelScale(meshDensity);
 
     // Fidelity label
     const fidelityLabel = meshDensity <= 30 ? "SKELETAL" : meshDensity <= 70 ? "MEDIUM" : "HI_FIDELITY";
@@ -57,69 +57,69 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
             {/* ── 2-column area ─────────────────────────────────────────── */}
             <div className="grid grid-cols-[2fr_1fr] gap-3 items-stretch">
 
-                {/* Left: Pixelating scaling container */}
-                <div className="relative rounded-xl border border-white/5 overflow-hidden bg-black min-h-[130px]">
+                {/* Left: Pixelating Matterhorn image */}
+                <div className="relative rounded-xl border border-white/5 overflow-hidden bg-black min-h-[130px] flex items-center justify-center">
 
-                    {/* 
-                        FIX: To ensure pixelation without shifting:
-                        1. Outer container (absolute inset-0) is the viewport.
-                        2. Pixelated container (style={{imageRendering: 'pixelated'}})
-                        3. Inner div scaled down to 1/N
-                        4. Image inside fills the 1/N div then scales UP by N
-                    */}
-                    <div className="absolute inset-0 pointer-events-none" style={{
-                        imageRendering: 'pixelated'
-                    }}>
+                    {/* ── Pixelation Engine ─────────────────────────────────── */}
+                    {/* Outer wrapper keeps the layout shape fixed */}
+                    <div className="absolute inset-0 overflow-hidden">
+                        {/* Intermediate container tracks the "resolution" scale */}
                         <div
-                            className="absolute top-0 left-0 w-full h-full"
+                            className="w-full h-full transform-gpu overflow-hidden"
                             style={{
-                                width: `${100 / pixelFactor}%`,
-                                height: `${100 / pixelFactor}%`,
-                                transform: `scale(${pixelFactor})`,
-                                transformOrigin: "0 0",
+                                transform: `scale(${1 / pixelN})`,
+                                transformOrigin: "top left",
+                                width: `${pixelN * 100}%`,
+                                height: `${pixelN * 100}%`,
+                                imageRendering: "pixelated",
                             }}
                         >
+                            {/* Real image inverse-scales to keep the "zoom" constant */}
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                alt="Swiss Alps"
+                                alt="Matterhorn"
                                 src="/matterhorn-custom.jpg"
-                                className="w-full h-full object-cover"
+                                className="absolute inset-0 w-full h-full object-cover"
                                 style={{
-                                    imageRendering: 'pixelated',
-                                    // Fallbacks for older browsers if needed
-                                    // @ts-ignore
-                                    interpolationMode: 'nearest-neighbor'
+                                    imageRendering: "pixelated",
+                                    transform: `scale(${pixelN})`,
+                                    transformOrigin: "top left",
+                                    width: `${100 / pixelN}%`,
+                                    height: `${100 / pixelN}%`,
                                 }}
                             />
                         </div>
                     </div>
 
-                    {/* Dark overlay gradient – day lighter, night darker */}
+                    {/* Dark overlay gradient – day lighter, night darker (NO RED TINT) */}
                     <div className={cn(
                         "absolute inset-0 pointer-events-none transition-colors duration-700",
-                        isDay ? "bg-gradient-to-t from-black/40 via-transparent to-black/10"
-                            : "bg-gradient-to-t from-black/70 via-black/30 to-black/20"
+                        isDay ? "bg-gradient-to-t from-black/40 via-transparent"
+                            : "bg-gradient-to-t from-black/70 via-black/20"
                     )} />
 
                     {/* Fidelity badge bottom-left */}
-                    <div className="absolute bottom-2 left-2">
-                        <span className={cn("font-mono text-[8px] font-bold px-1.5 py-0.5 rounded border", fidelityClass)}>
+                    <div className="absolute bottom-2 left-2 z-20">
+                        <span className={cn("font-mono text-[8px] font-bold px-1.5 py-0.5 rounded border shadow-lg", fidelityClass)}>
                             {fidelityLabel} // {meshDensity}%
                         </span>
                     </div>
 
-                    {/* Warning flash overlay */}
-                    {isPenalty && (
-                        <motion.div
-                            animate={{ opacity: [0.1, 0.5, 0.1] }}
-                            transition={{ duration: 1.2, repeat: Infinity }}
-                            className="absolute inset-0 bg-red-600/20 pointer-events-none flex items-center justify-center"
-                        >
-                            <span className="font-mono text-[9px] text-red-400 font-bold border border-red-500/50 px-2 py-0.5 bg-black/70">
-                                {isDay ? "LOW_FIDELITY_DETECTED" : "EFFICIENCY_VIOLATION"}
-                            </span>
-                        </motion.div>
-                    )}
+                    {/* Warning text (Floating, no full-screen tint) */}
+                    <AnimatePresence>
+                        {isPenalty && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="absolute inset-0 z-30 pointer-events-none flex items-center justify-center"
+                            >
+                                <div className="font-mono text-[10px] text-red-500 font-bold border border-red-500/50 px-3 py-1.5 bg-black/80 backdrop-blur-md shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                                    {isDay ? "LOW_FIDELITY_DETECTED" : "EFFICIENCY_VIOLATION"}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 {/* Right: Day/Night status panel */}
