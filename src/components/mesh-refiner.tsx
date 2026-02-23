@@ -73,60 +73,109 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
                 </div>
             </div>
 
-            {/* Matterhorn Rendering Area */}
+            {/* Mountain Range Rendering Area */}
             <div className="relative flex-1 min-h-[140px] flex items-center justify-center bg-black/20 rounded-xl border border-white/5 overflow-hidden">
                 <AnimatePresence mode="wait">
                     {isDay ? (
+                        /* ── DAY: High-Poly Mountain Range ── */
                         <motion.svg
                             key="day-mesh"
-                            width="180"
-                            height="120"
-                            viewBox="0 0 100 80"
-                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 1.1, y: -10 }}
-                            className="drop-shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                            width="100%"
+                            height="100%"
+                            viewBox="0 0 280 110"
+                            preserveAspectRatio="xMidYMid meet"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            className="px-4"
                         >
-                            {/* Detailed Mesh (Day) */}
-                            <path
-                                d="M10 70 L50 10 L90 70 Z"
-                                stroke="rgba(255,255,255,0.8)"
-                                strokeWidth="0.5"
-                                fill="transparent"
+                            {/* Base horizon line */}
+                            <line x1="0" y1="95" x2="280" y2="95" stroke="rgba(34,211,238,0.25)" strokeWidth="0.5" />
+
+                            {/* Main ridge silhouette */}
+                            <polyline
+                                points="0,95 20,88 35,70 50,80 65,45 80,62 100,20 115,50 130,35 145,55 160,25 175,60 195,40 215,70 230,55 250,80 265,72 280,95"
+                                stroke="rgba(255,255,255,0.75)"
+                                strokeWidth="0.8"
+                                fill="none"
+                                strokeLinejoin="round"
                             />
-                            {/* Inner complexity lines based on density slider (visual only) */}
-                            {Array.from({ length: Math.floor(meshDensity / 10) }).map((_, i) => (
-                                <line
+
+                            {/* Mesh triangulation — density-driven opacity */}
+                            {[
+                                /* Left cluster */
+                                "35,70 65,45 50,80",
+                                "35,70 50,80 20,88",
+                                "65,45 50,80 80,62",
+                                "35,70 65,45 50,95",
+                                /* Centre-left peak */
+                                "65,45 100,20 80,62",
+                                "80,62 100,20 115,50",
+                                "65,45 80,62 65,95",
+                                "80,62 115,50 95,95",
+                                /* Centre peak */
+                                "100,20 115,50 130,35",
+                                "115,50 130,35 145,55",
+                                "100,20 130,35 115,95",
+                                "130,35 145,55 130,95",
+                                /* Centre-right peak */
+                                "130,35 145,55 160,25",
+                                "145,55 160,25 175,60",
+                                "160,25 175,60 195,40",
+                                "145,55 175,60 160,95",
+                                /* Right cluster */
+                                "175,60 195,40 215,70",
+                                "195,40 215,70 230,55",
+                                "215,70 230,55 250,80",
+                                "230,55 250,80 265,72",
+                                "215,70 250,80 230,95",
+                            ].map((pts, i) => (
+                                <polygon
                                     key={i}
-                                    x1={10 + i * 4}
-                                    y1={70}
-                                    x2={50}
-                                    y2={10 + i * 5}
-                                    stroke="rgba(34,211,238,0.3)"
-                                    strokeWidth="0.2"
+                                    points={pts}
+                                    fill="rgba(34,211,238,0.03)"
+                                    stroke="rgba(34,211,238,0.22)"
+                                    strokeWidth="0.35"
+                                    opacity={0.4 + (meshDensity / 100) * 0.6}
                                 />
                             ))}
-                            <line x1="50" y1="10" x2="50" y2="70" stroke="rgba(34,211,238,0.4)" strokeWidth="0.3" />
-                            <line x1="10" y1="70" x2="90" y2="70" stroke="rgba(34,211,238,0.4)" strokeWidth="0.3" />
+
+                            {/* Extra density lines that grow with slider */}
+                            {meshDensity > 40 && [
+                                [100, 20, 100, 95],
+                                [160, 25, 160, 95],
+                                [65, 45, 65, 95],
+                                [130, 35, 130, 95],
+                                [195, 40, 195, 95],
+                            ].map(([x1, y1, x2, y2], i) => (
+                                <line key={`v${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(34,211,238,0.12)" strokeWidth="0.3" />
+                            ))}
                         </motion.svg>
                     ) : (
+                        /* ── NIGHT: Low-Poly Silhouette ── */
                         <motion.svg
                             key="night-mesh"
-                            width="180"
-                            height="120"
-                            viewBox="0 0 100 80"
-                            initial={{ opacity: 0, scale: 1.1, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                            width="100%"
+                            height="100%"
+                            viewBox="0 0 280 110"
+                            preserveAspectRatio="xMidYMid meet"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            className="px-4"
                         >
-                            {/* Minimalist Triangle (Night) */}
-                            <path
-                                d="M10 70 L50 20 L90 70 Z"
-                                stroke="rgba(255,255,255,0.3)"
-                                strokeWidth="1"
-                                fill="rgba(255,255,255,0.05)"
+                            {/* Filled silhouette */}
+                            <polygon
+                                points="0,95 35,70 65,45 100,20 130,35 160,25 195,40 230,55 265,72 280,95"
+                                fill="rgba(255,255,255,0.04)"
+                                stroke="rgba(255,255,255,0.35)"
+                                strokeWidth="0.8"
+                                strokeLinejoin="round"
                             />
-                            <line x1="50" y1="20" x2="50" y2="70" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                            {/* Minimal peak connectors */}
+                            <line x1="100" y1="20" x2="100" y2="95" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                            <line x1="160" y1="25" x2="160" y2="95" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                            <line x1="0" y1="95" x2="280" y2="95" stroke="rgba(255,255,255,0.15)" strokeWidth="0.4" />
                         </motion.svg>
                     )}
                 </AnimatePresence>
