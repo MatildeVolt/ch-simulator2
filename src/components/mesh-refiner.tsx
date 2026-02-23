@@ -7,6 +7,7 @@ import { Sun, Moon } from "lucide-react";
 
 interface MeshRefinerProps {
     onPenalty: (msg: string) => void;
+    onStateChange?: (state: { isDay: boolean; meshDensity: number }) => void;
 }
 
 function getPixelDivisor(density: number): number {
@@ -18,7 +19,7 @@ function getPixelDivisor(density: number): number {
     return 16;
 }
 
-export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
+export default function MeshRefiner({ onPenalty, onStateChange }: MeshRefinerProps) {
     const [isDay, setIsDay] = useState(true);
     const [meshDensity, setMeshDensity] = useState(100);
     const [cycleTime, setCycleTime] = useState(15);
@@ -108,6 +109,10 @@ export default function MeshRefiner({ onPenalty }: MeshRefinerProps) {
         const interval = setInterval(checkEnergy, 1000);
         return () => clearInterval(interval);
     }, [isDay, meshDensity, onPenalty, isMoving, isCycleGrace]);
+
+    useEffect(() => {
+        onStateChange?.({ isDay, meshDensity });
+    }, [isDay, meshDensity, onStateChange]);
 
     const handleSliderChange = (val: number) => {
         setMeshDensity(val);

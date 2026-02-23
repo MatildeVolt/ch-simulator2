@@ -6,9 +6,10 @@ import { cn } from "@/lib/utils";
 
 interface SBBEngineProps {
     onRecover: () => void;
+    onStateChange?: (isOptimized: boolean) => void;
 }
 
-export default function SBBEngine({ onRecover }: SBBEngineProps) {
+export default function SBBEngine({ onRecover, onStateChange }: SBBEngineProps) {
     const [delay, setDelay] = useState(0); // 0 = nominal
     const [isHoldingBtn, setIsHoldingBtn] = useState(false);
 
@@ -112,6 +113,10 @@ export default function SBBEngine({ onRecover }: SBBEngineProps) {
             if (driftIntervalRef.current) clearInterval(driftIntervalRef.current);
         };
     }, [delay, timeStopped]);
+
+    useEffect(() => {
+        onStateChange?.(delay === 0);
+    }, [delay, onStateChange]);
 
     // Button Hold Logic (countdown delay)
     useEffect(() => {

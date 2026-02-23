@@ -7,6 +7,7 @@ import MotionCard from "@/components/motion-card";
 import SBBEngine from "@/components/sbb-engine";
 import SwanRadar from "@/components/swan-radar";
 import MeshRefiner from "@/components/mesh-refiner";
+import CowAdvisory from "@/components/cow-advisory";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -21,6 +22,12 @@ export default function KernelPage() {
     const [currentTime, setCurrentTime] = useState("");
     const [logs, setLogs] = useState(INITIAL_LOGS);
     const [isShaking, setIsShaking] = useState(false);
+
+    // Advisory States
+    const [isDay, setIsDay] = useState(true);
+    const [meshDensity, setMeshDensity] = useState(100);
+    const [isRadarBreach, setIsRadarBreach] = useState(false);
+    const [isSbbOptimized, setIsSbbOptimized] = useState(true);
 
     useEffect(() => {
         // Just for ticking the current time in the UI somewhere if needed, but not strictly required
@@ -58,7 +65,11 @@ export default function KernelPage() {
 
         setLogs(prev => [newLog, ...prev].slice(0, 10));
         setIsShaking(true);
-        setTimeout(() => setIsShaking(false), 500);
+        setIsRadarBreach(true);
+        setTimeout(() => {
+            setIsShaking(false);
+            setIsRadarBreach(false);
+        }, 1000);
     };
 
     const handleEnergyPenalty = (msg: string) => {
@@ -186,7 +197,10 @@ export default function KernelPage() {
                             </div>
 
                             <div className="mt-8">
-                                <SBBEngine onRecover={handleRecover} />
+                                <SBBEngine
+                                    onRecover={handleRecover}
+                                    onStateChange={setIsSbbOptimized}
+                                />
                             </div>
                         </MotionCard>
 
@@ -224,7 +238,13 @@ export default function KernelPage() {
                                 </div>
 
                                 <div className="mt-12 h-full">
-                                    <MeshRefiner onPenalty={handleEnergyPenalty} />
+                                    <MeshRefiner
+                                        onPenalty={handleEnergyPenalty}
+                                        onStateChange={(state) => {
+                                            setIsDay(state.isDay);
+                                            setMeshDensity(state.meshDensity);
+                                        }}
+                                    />
                                 </div>
                             </motion.div>
                         </MotionCard>
@@ -238,6 +258,14 @@ export default function KernelPage() {
                                 Adjust mesh density to match the solar cycle. High-fidelity rendering is restricted to daylight hours for energy optimization.
                             </p>
                         </div>
+
+                        {/* Module 04 Pillar Intelligence (Cow Advisory) */}
+                        <CowAdvisory
+                            isDay={isDay}
+                            meshDensity={meshDensity}
+                            isRadarBreach={isRadarBreach}
+                            isSbbOptimized={isSbbOptimized}
+                        />
                     </div>
 
                 </div>
